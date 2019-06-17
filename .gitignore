@@ -102,3 +102,10 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# other
+tmp/
+temp/
+
+# project specific
+app_config.py
