@@ -1,3 +1,5 @@
-DB_USER='<USER>'
-DB_PASS='<PASS>'
-DB_NAME='stocks'
+DB_TYPE='<mysql|sqlite>'
+DB_NAME='<stocks|stocks.db>'
+DB_USER='<mysql_username>'
+DB_PASS='<mysql_pass>'
+
