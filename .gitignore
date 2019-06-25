@@ -89,6 +89,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+stock_sim/
 
 # Spyder project settings
 .spyderproject
