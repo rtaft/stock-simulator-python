@@ -1,7 +1,7 @@
 import math
 import pandas
 import app_config
-from database.mysql_db import MySQLDatabase
+from database import db
 
 
 class SyncDaily:
@@ -21,8 +21,7 @@ class SyncDaily:
                 self.database.add_company_info(row['Name'], row['Symbol'], exchange, ipo, industry, sector)
 
 if __name__ == "__main__":
-    database = MySQLDatabase()
-    database.connect(user=app_config.DB_USER, password=app_config.DB_PASS, database=app_config.DB_NAME)
+    database = db.connect()
     sync_daily = SyncDaily(database)
     companies = database.get_all_companies()
     sync_daily.import_csv('http://www.nasdaq.com/screening/companies-by-industry.aspx?exchange=NYSE&render=download', 'NYSE', companies)

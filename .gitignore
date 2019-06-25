@@ -113,3 +113,4 @@ temp/
 
 # project specific
 app_config.py
+stocks.db
