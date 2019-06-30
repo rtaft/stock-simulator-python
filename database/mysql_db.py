@@ -27,6 +27,15 @@ class MySQLDatabase:
         query = 'INSERT INTO price_history (company_id, trade_date, trade_close, trade_volume) VALUES (%s, %s, %s, %s)'
         self.cursor.execute(query, (company_id, trade_date, trade_close, trade_volume))
     
+    def get_price_history_by_date(self, start, end):
+        self.cursor.execute('SELECT * FROM price_history where trade_date BETWEEN %s AND %s', (start, end))
+        full_history = dict()
+        for row in self.cursor:
+            price_history = dict(history_id=row[0], company_id=row[1], trade_date=row[2], trade_close=row[3], trade_volume=row[4])
+            company = full_history.setdefault(price_history['company_id'], dict())
+            company[price_history['trade_date']] = price_history
+        return full_history 
+
     def remove_dividend_history(self, company_id):
         self.cursor.execute('DELETE FROM dividend_history WHERE company_id = {}'.format(company_id))
 
@@ -54,4 +63,38 @@ class MySQLDatabase:
                         symbol=row[2],
                         exchange=row[3])
             companies.setdefault(company['exchange'], dict())[company['symbol']] = company
+        return companies
+    
+    def find_company_by_symbol(self, symbol):
+        companies = []
+        self.cursor.execute('SELECT * from company where symbol = %s', (symbol, ))
+        for row in self.cursor:
+            company = dict(company_id=row[0],
+                           company_name=row[1],
+                           symbol=row[2],
+                           exchange=row[3])
+            companies.append(company)
+        return companies
+
+    def get_stock_list_name(self, name):
+        self.cursor.execute('SELECT * from stock_list where name = %s', (name, ))
+        row = self.cursor.fetchone()
+        if row:
+            return dict(list_id=row[0], name=name)
+        self.cursor.execute('INSERT INTO stock_list VALUES (%s, %s)', (None, name))
+        return dict(list_id=self.cursor.lastrowid, name=name)
+    
+    def add_stock_list(self, company_id, list_id, start_date=None, end_date=None):
+        self.cursor.execute('INSERT INTO stock_list_data VALUES (%s, %s, %s, %s)', (company_id, list_id, start_date, end_date))
+
+    def get_current_stock_list(self, name):
+        self.cursor.execute('SELECT * from company where company_id in (SELECT company_id FROM stock_list_data where list_id = '\
+            '(SELECT list_id from stock_list where name = %s) AND date_removed IS NULL)', (name, ))
+        companies = dict()
+        for row in self.cursor:
+            company = dict(company_id=row[0],
+                           company_name=row[1],
+                           symbol=row[2],
+                           exchange=row[3])
+            companies[company['symbol']] = company
         return companies

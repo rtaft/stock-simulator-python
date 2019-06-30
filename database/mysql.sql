@@ -16,7 +16,8 @@ CREATE TABLE IF NOT EXISTS price_history (
     trade_close FLOAT NOT NULL,
     trade_volume INT NOT NULL,
     PRIMARY KEY(history_id),
-    FOREIGN KEY(company_id) REFERENCES company(company_id)
+    FOREIGN KEY(company_id) REFERENCES company(company_id),
+    UNIQUE KEY (company_id, trade_date)
 );
 
 CREATE TABLE IF NOT EXISTS dividend_history (
@@ -26,4 +27,19 @@ CREATE TABLE IF NOT EXISTS dividend_history (
     company_id INT NOT NULL,
     PRIMARY KEY(dividend_id),
     FOREIGN KEY(company_id) REFERENCES company(company_id)
+);
+
+CREATE TABLE IF NOT EXISTS stock_list (
+    list_id INT AUTO_INCREMENT,
+    name VARCHAR(50) NOT NULL,
+    PRIMARY KEY (list_id)
+);
+
+CREATE TABLE IF NOT EXISTS stock_list_data (
+    company_id INT NOT NULL,
+    list_id INT NOT NULL,
+    date_added DATE,
+    date_removed DATE,
+    FOREIGN KEY(company_id) REFERENCES company(company_id),
+    FOREIGN KEY(list_id) REFERENCES stock_list(list_id)
 );

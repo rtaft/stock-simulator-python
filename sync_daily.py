@@ -1,30 +1,29 @@
 import math
-import pandas
+import yfinance as yf
 import app_config
 from database import db
+from datetime import date
+class SyncDaily():
 
-
-class SyncDaily:
     def __init__(self, database):
         self.database = database
-    
-    def download_all(self):
-        pass
-    
-    def import_csv(self, url, exchange, companies):
-        data = pandas.read_csv(url)
-        for _, row in data.iterrows():
-            if row['Symbol'] not in companies.get(exchange, {}):
-                ipo = 0 if math.isnan(row['IPOyear']) else row['IPOyear']
-                industry = '' if not isinstance(row['Industry'],str) else row['Industry']
-                sector = '' if not isinstance(row['Sector'], str) else row['Sector']
-                self.database.add_company_info(row['Name'], row['Symbol'], exchange, ipo, industry, sector)
+
+    def download_recent(self, start, symbols, companies, existing_history):
+        data = yf.download(" ".join(symbols), start=start, end=date.today())
+        for index, row in data.iterrows():
+            for symbol in data.columns.levels[1]:
+                if symbol in row['Close']:
+                    if companies[symbol]['company_id'] not in existing_history or index.date() not in existing_history[companies[symbol]['company_id']]:
+                        if not math.isnan(row['Close'][symbol]):
+                            self.database.insert_price_history(companies[symbol]['company_id'], index, row['Close'][symbol], row['Volume'][symbol])
+                   
 
 if __name__ == "__main__":
     database = db.connect()
+    start = "1960-06-21"
     sync_daily = SyncDaily(database)
-    companies = database.get_all_companies()
-    sync_daily.import_csv('http://www.nasdaq.com/screening/companies-by-industry.aspx?exchange=NYSE&render=download', 'NYSE', companies)
-    sync_daily.import_csv('http://www.nasdaq.com/screening/companies-by-industry.aspx?exchange=NASDAQ&render=download', 'NASDAQ', companies)
+    companies = database.get_current_stock_list('DOW')
+    history = database.get_price_history_by_date(start, date.today())
+    sync_daily.download_recent(start, companies.keys(), companies, history)
     database.commit()
     database.close()
