@@ -22,9 +22,9 @@ CREATE TABLE IF NOT EXISTS price_history (
 
 CREATE TABLE IF NOT EXISTS dividend_history (
     dividend_id INT AUTO_INCREMENT,
+    company_id INT NOT NULL,
     ex_date TIMESTAMP,
     dividend FLOAT NOT NULL,
-    company_id INT NOT NULL,
     PRIMARY KEY(dividend_id),
     FOREIGN KEY(company_id) REFERENCES company(company_id)
 );

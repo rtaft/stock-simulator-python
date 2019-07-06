@@ -24,17 +24,26 @@ class SyncHistory:
     def store_full_history(self, company, history):
         database.remove_price_history(company_id=company.get('company_id'))
         database.remove_dividend_history(company_id=company.get('company_id'))
+        price_history = []
+        dividends = []
         for index, row in history.iterrows():
             if not math.isnan(row['Close']):
-                database.insert_price_history(company.get('company_id'), index, row['Close'], row['Volume'])
+                price_history.append((company.get('company_id'), index, row['Close'], row['Volume']))
             if row['Dividends']:
-                database.insert_dividend(company.get('company_id'), index, row['Dividends'])
+                dividends.append((company.get('company_id'), index, row['Dividends']))
+        database.insert_dividend_bulk(dividends)
+        database.insert_price_history_bulk(price_history)
 
 if __name__ == "__main__":
-    symbols = ['BCE']
     database = MySQLDatabase()
     database.connect(user=app_config.DB_USER, password=app_config.DB_PASS, database=app_config.DB_NAME)
     sync_history = SyncHistory(database)
-    companies = database.get_all_companies()
+    #companies = database.get_all_companies()
+    companies = database.get_current_stock_list('DOW')
+    symbols = []
+    ignore_company_ids = database.get_company_ids_in_price_history()
+    for symbol, company in companies.items():
+        if company['symbol'] not in symbols and company['company_id'] not in ignore_company_ids:
+            symbols.append(company['symbol'])
     sync_history.sync_stock_history(symbols, companies)
     database.commit()

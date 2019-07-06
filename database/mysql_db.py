@@ -27,21 +27,63 @@ class MySQLDatabase:
         query = 'INSERT INTO price_history (company_id, trade_date, trade_close, trade_volume) VALUES (%s, %s, %s, %s)'
         self.cursor.execute(query, (company_id, trade_date, trade_close, trade_volume))
     
+    def insert_price_history_bulk(self, bulk_data):
+        """
+            :param bulk_data: List of tuples using  (company_id, trade_date, trade_close, trade_volume)
+        """
+        query = 'INSERT INTO price_history (company_id, trade_date, trade_close, trade_volume) VALUES (%s, %s, %s, %s)'
+        self.cursor.executemany(query, bulk_data)
+
     def get_price_history_by_date(self, start, end):
+        """
+            dict[company_id][trade_date][history object]
+        """
         self.cursor.execute('SELECT * FROM price_history where trade_date BETWEEN %s AND %s', (start, end))
         full_history = dict()
         for row in self.cursor:
             price_history = dict(history_id=row[0], company_id=row[1], trade_date=row[2], trade_close=row[3], trade_volume=row[4])
             company = full_history.setdefault(price_history['company_id'], dict())
             company[price_history['trade_date']] = price_history
-        return full_history 
+        return full_history
+
+    def get_price_history_by_company(self, company_ids):
+        self.cursor.execute('SELECT * FROM price_history where company_id in ({})'.format(', '.join(['%s']*len(company_ids))), company_ids)
+        full_history = dict()
+        for row in self.cursor:
+            price_history = dict(history_id=row[0], company_id=row[1], trade_date=row[2], trade_close=row[3], trade_volume=row[4])
+            company = full_history.setdefault(price_history['company_id'], dict())
+            company[price_history['trade_date']] = price_history
+        return full_history
+
+    def get_company_ids_in_price_history(self):
+        self.cursor.execute('SELECT DISTINCT company_id FROM price_history')
+        company_ids = []
+        for row in self.cursor:
+            company_ids.append(row[0])
+        return company_ids
 
     def remove_dividend_history(self, company_id):
         self.cursor.execute('DELETE FROM dividend_history WHERE company_id = {}'.format(company_id))
 
     def insert_dividend(self, company_id, dividend_date, dividend):
-        query = 'INSERT INTO dividend_history (ex_date, dividend, company_id) VALUES (%s, %s, %s)'
-        self.cursor.execute(query, (dividend_date, dividend, company_id))
+        query = 'INSERT INTO dividend_history (company_id, ex_date, dividend) VALUES (%s, %s, %s)'
+        self.cursor.execute(query, (company_id, dividend_date, dividend))
+
+    def insert_dividend_bulk(self, bulk_data):
+        """
+            :param bulk_data: List of tuples using  (dividend_date, dividend, company_id)
+        """
+        query = 'INSERT INTO dividend_history (company_id, ex_date, dividend) VALUES (%s, %s, %s)'
+        self.cursor.executemany(query, bulk_data)
+
+    def get_dividend_history_by_date(self, start_date, end_date):
+        self.cursor.execute('SELECT * FROM dividend_history where ex_date BETWEEN %s AND %s', (start_date, end_date))
+        full_history = dict()
+        for row in self.cursor:
+            dividend_history = dict(dividend_id=row[0], company_id=row[1], ex_date=row[2], dividend=row[3])
+            company = full_history.setdefault(dividend_history['company_id'], dict())
+            company[dividend_history['ex_date']] = dividend_history
+        return full_history
 
     def add_company_info(self, company_name, symbol, exchange, ipo, sector, industry):
         query = 'INSERT INTO company (company_name, symbol, exchange, ipo, sector, industry) VALUES (%s, %s, %s, %s, %s, %s)'
