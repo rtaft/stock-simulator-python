@@ -33,21 +33,17 @@ class MySQLDatabase:
         """
         query = 'INSERT INTO price_history (company_id, trade_date, trade_close, trade_volume) VALUES (%s, %s, %s, %s)'
         self.cursor.executemany(query, bulk_data)
-
-    def get_price_history_by_date(self, start, end):
+    
+    def get_price_history(self, company_ids=None, start_date=None, end_date=None):
         """
             dict[company_id][trade_date][history object]
         """
-        self.cursor.execute('SELECT * FROM price_history where trade_date BETWEEN %s AND %s', (start, end))
-        full_history = dict()
-        for row in self.cursor:
-            price_history = dict(history_id=row[0], company_id=row[1], trade_date=row[2], trade_close=row[3], trade_volume=row[4])
-            company = full_history.setdefault(price_history['company_id'], dict())
-            company[price_history['trade_date']] = price_history
-        return full_history
-
-    def get_price_history_by_company(self, company_ids):
-        self.cursor.execute('SELECT * FROM price_history where company_id in ({})'.format(', '.join(['%s']*len(company_ids))), company_ids)
+        if company_ids:
+            self.cursor.execute('SELECT * FROM price_history where company_id in ({})'.format(', '.join(['%s']*len(company_ids))), company_ids)
+        elif start_date and end_date:
+            self.cursor.execute('SELECT * FROM price_history where trade_date BETWEEN %s AND %s', (start_date, end_date))
+        else:
+            self.cursor.execute('SELECT * FROM price_history')
         full_history = dict()
         for row in self.cursor:
             price_history = dict(history_id=row[0], company_id=row[1], trade_date=row[2], trade_close=row[3], trade_volume=row[4])
@@ -76,13 +72,21 @@ class MySQLDatabase:
         query = 'INSERT INTO dividend_history (company_id, ex_date, dividend) VALUES (%s, %s, %s)'
         self.cursor.executemany(query, bulk_data)
 
-    def get_dividend_history_by_date(self, start_date, end_date):
-        self.cursor.execute('SELECT * FROM dividend_history where ex_date BETWEEN %s AND %s', (start_date, end_date))
+    def get_dividend_history(self, start_date=None, end_date=None):
+        if start_date and end_date:
+            self.cursor.execute('SELECT * FROM dividend_history where ex_date BETWEEN %s AND %s', (start_date, end_date))
+        else:
+            self.cursor.execute('SELECT * FROM dividend_history')
         full_history = dict()
         for row in self.cursor:
             dividend_history = dict(dividend_id=row[0], company_id=row[1], ex_date=row[2], dividend=row[3])
             company = full_history.setdefault(dividend_history['company_id'], dict())
-            company[dividend_history['ex_date']] = dividend_history
+            if not dividend_history['ex_date']:
+                print('Empty Dividend date {}'.format(dividend_history))
+            elif dividend_history['ex_date'].date() not in company:
+                company[dividend_history['ex_date'].date()] = dividend_history
+            else:
+                print('Duplicate Dividend found for {} {}'.format(dividend_history['company_id'], dividend_history['ex_date']))
         return full_history
 
     def add_company_info(self, company_name, symbol, exchange, ipo, sector, industry):
@@ -96,9 +100,12 @@ class MySQLDatabase:
                     sector=sector,
                     industry=industry)
     
-    def get_all_companies(self):
+    def get_companies(self, company_ids=None):
         companies = dict()
-        self.cursor.execute('SELECT * from company')
+        if company_ids:
+            self.cursor.execute('SELECT * from company WHERE company_id in ({})'.format(', '.join(['%s']*len(company_ids))), company_ids)
+        else:
+            self.cursor.execute('SELECT * from company')
         for row in self.cursor:
             company = dict(company_id=row[0],
                         company_name=row[1],
