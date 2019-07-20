@@ -83,8 +83,8 @@ class MySQLDatabase:
             company = full_history.setdefault(dividend_history['company_id'], dict())
             if not dividend_history['ex_date']:
                 print('Empty Dividend date {}'.format(dividend_history))
-            elif dividend_history['ex_date'].date() not in company:
-                company[dividend_history['ex_date'].date()] = dividend_history
+            elif dividend_history['ex_date'] not in company:
+                company[dividend_history['ex_date']] = dividend_history
             else:
                 print('Duplicate Dividend found for {} {}'.format(dividend_history['company_id'], dividend_history['ex_date']))
         return full_history

@@ -38,6 +38,7 @@ def import_s_and_p(database):
 
 if __name__ == "__main__":
     database = db.connect()
+    import_dow(database)
     import_s_and_p(database)
     database.commit()
     database.close()

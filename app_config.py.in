@@ -3,3 +3,7 @@ DB_NAME='<stocks|stocks.db>'
 DB_USER='<mysql_username>'
 DB_PASS='<mysql_pass>'
 
+DEBUG = False
+TRADE_FEES = 0
+QUALIFIED_TAX_RATE = 0.15
+SHORT_TERM_TAX_RATE = 0.25

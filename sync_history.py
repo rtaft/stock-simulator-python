@@ -12,12 +12,15 @@ class SyncHistory:
     def sync_stock_history(self, symbols, companies):
         for symbol in symbols:
             data = yf.Ticker(symbol)
-            company = companies.get(data.info.get('fullExchangeName'), {}).get(data.info.get('symbol'))
+            #company = companies.get(data.info.get('fullExchangeName'), {}).get(data.info.get('symbol'))
+            company = companies.get(data.info.get('symbol'))
             if not company:
                 company = self.database.add_company_info(data.info.get('longName'),
                                                          data.info.get('symbol'),
                                                          data.info.get('fullExchangeName'), 0, '', '') # TODO
                 pprint.pprint(company)
+            else:
+                print ("Found {}".format(data.info.get('symbol')))
             history = data.history(period="max")
             self.store_full_history(company, history)
 
@@ -38,7 +41,6 @@ if __name__ == "__main__":
     database = MySQLDatabase()
     database.connect(user=app_config.DB_USER, password=app_config.DB_PASS, database=app_config.DB_NAME)
     sync_history = SyncHistory(database)
-    #companies = database.get_all_companies()
     companies = database.get_current_stock_list('DOW')
     symbols = []
     ignore_company_ids = database.get_company_ids_in_price_history()
