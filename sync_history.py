@@ -21,7 +21,7 @@ class SyncHistory:
                 pprint.pprint(company)
             else:
                 print ("Found {}".format(data.info.get('symbol')))
-            history = data.history(period="max")
+            history = data.history(period="max", auto_adjust=False)
             self.store_full_history(company, history)
 
     def store_full_history(self, company, history):
@@ -36,6 +36,7 @@ class SyncHistory:
                 dividends.append((company.get('company_id'), index, row['Dividends']))
         database.insert_dividend_bulk(dividends)
         database.insert_price_history_bulk(price_history)
+        # TODO STORE SPLITS
 
 if __name__ == "__main__":
     database = MySQLDatabase()

@@ -4,7 +4,7 @@ import app_config
 from database.mysql_db import MySQLDatabase
 from models.portfolio import Portfolio, StockHolding, Transaction
 from models.company import Company
-from traders.test import Test
+from traders.apple_buyer import Test
 from exceptions import InsuficientFunds, NegativeQuantity
 
 class Simulator:
@@ -121,8 +121,8 @@ def main():
     #cash = float(input("Enter Starting Cash Balance:"))
     #start_date = input("Enter Starting Date:")
     #end_date = input("Enter End Date:")
-    start_date = datetime.date(2000, 1, 2)
-    end_date = datetime.date(2019, 3, 1)
+    start_date = datetime.date(2019, 7, 3)
+    end_date = datetime.date(2019, 8, 1)
     database = MySQLDatabase()
     database.connect(user=app_config.DB_USER, password=app_config.DB_PASS, database=app_config.DB_NAME)
     traders = []
