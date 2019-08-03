@@ -17,23 +17,38 @@ class Portfolio:
     def __init__(self):
         self.stock_holdings = dict()
         self.cash = 0
-    
+        self.starting_cash = 0
+        self.taxes_paid = 0
+
+    def add_cash(self, cash):
+        self.cash += cash
+        self.starting_cash += cash
+
     def get_stock_holdings_list(self):
         return list(self.stock_holdings.values())
 
     def get_stock_holdings(self):
         return self.stock_holdings
 
-    def get_stock_value(self):
+    def get_stock_value(self, current_prices):
         total = 0
         for stock in self.stock_holdings.values():
-            total += stock.current_price * stock.quantity
+            total += current_prices[stock.company_id] * stock.quantity
         return total
     
-    def get_portfolio_value(self):
-        return self.cash + self.get_stock_value()
+    def get_portfolio_value(self, current_prices):
+        return self.cash + self.get_stock_value(current_prices)
     
-    def print_portfolio(self): #TODO add current value to print
-        print('\tCash: {:.2f}'.format(self.cash))
+    def print_portfolio(self, current_prices):
         for stock in self.stock_holdings.values():
-            print('\t{}: {}'.format(stock.symbol, stock.quantity))
+            value = current_prices[stock.company_id] * stock.quantity
+            print('\t{}: {}: {:.2f}'.format(stock.symbol, stock.quantity, value))
+        print('\tValue: {:.2f}'.format(self.get_stock_value(current_prices)))
+        print('\tCash: {:.2f}'.format(self.cash))
+        print('\tTotal: {:.2f}'.format(self.get_portfolio_value(current_prices)))
+
+    def get_profit(self, current_prices):
+        return self.get_portfolio_value(current_prices) - self.starting_cash
+
+    def print_profit(self, current_prices):
+        print('Total Profit: {}'.format(self.get_profit(current_prices)))
