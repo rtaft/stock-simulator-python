@@ -1,6 +1,7 @@
 import math
 import yfinance as yf
 import pprint
+import time
 
 import app_config
 from database.mysql_db import MySQLDatabase
@@ -29,14 +30,21 @@ class SyncHistory:
         database.remove_dividend_history(company_id=company.get('company_id'))
         price_history = []
         dividends = []
-        for index, row in history.iterrows():
-            if not math.isnan(row['Close']):
-                price_history.append((company.get('company_id'), index, row['Close'], row['Volume']))
-            if row['Dividends']:
-                dividends.append((company.get('company_id'), index, row['Dividends']))
+        splits = []
+        history.iloc[::-1]
+        multiplier = 1
+        for index in reversed(history.index):
+            if history.loc[index, 'Stock Splits']:
+                multiplier *= float(history.loc[index, 'Stock Splits'])
+                splits.append((company.get('company_id'), index, float(history.loc[index, 'Stock Splits'])))
+            if not math.isnan(history.loc[index, 'Close']):
+                price_history.append((company.get('company_id'), index, round(float(history.loc[index, 'Close'] * multiplier), 2), int(history.loc[index, 'Volume'])))
+            if history.loc[index, 'Dividends']:
+                dividends.append((company.get('company_id'), index, round(float(history.loc[index, 'Dividends'] * multiplier), 3)))
+            
         database.insert_dividend_bulk(dividends)
         database.insert_price_history_bulk(price_history)
-        # TODO STORE SPLITS
+        database.insert_splits_bulk(splits)
 
 if __name__ == "__main__":
     database = MySQLDatabase()

@@ -29,6 +29,15 @@ CREATE TABLE IF NOT EXISTS dividend_history (
     FOREIGN KEY(company_id) REFERENCES company(company_id)
 );
 
+CREATE TABLE IF NOT EXISTS split_history (
+    split_id INT AUTO_INCREMENT,
+    company_id INT NOT NULL,
+    split_date DATE,
+    ratio FLOAT NOT NULL,
+    PRIMARY KEY(split_id),
+    FOREIGN KEY(company_id) REFERENCES company(company_id)
+);
+
 CREATE TABLE IF NOT EXISTS stock_list (
     list_id INT AUTO_INCREMENT,
     name VARCHAR(50) NOT NULL,

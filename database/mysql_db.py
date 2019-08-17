@@ -33,7 +33,7 @@ class MySQLDatabase:
         """
         query = 'INSERT INTO price_history (company_id, trade_date, trade_close, trade_volume) VALUES (%s, %s, %s, %s)'
         self.cursor.executemany(query, bulk_data)
-    
+
     def get_price_history(self, company_ids=None, start_date=None, end_date=None):
         """
             dict[company_id][trade_date][history object]
@@ -87,6 +87,31 @@ class MySQLDatabase:
                 company[dividend_history['ex_date']] = dividend_history
             else:
                 print('Duplicate Dividend found for {} {}'.format(dividend_history['company_id'], dividend_history['ex_date']))
+        return full_history
+
+    def insert_splits_bulk(self, bulk_data):
+        query = 'INSERT INTO split_history (company_id, split_date, ratio) VALUES (%s, %s, %s)'
+        self.cursor.executemany(query, bulk_data)
+
+    def insert_split(self, company_id, split_date, ratio):
+        query = 'INSERT INTO split_history (company_id, split_date, ratio) VALUES (%s, %s, %s)'
+        self.cursor.execute(query, (company_id, split_date, ratio))
+
+    def get_split_history(self, start_date=None, end_date=None):
+        if start_date and end_date:
+            self.cursor.execute('SELECT * FROM split_history where split_date BETWEEN %s AND %s', (start_date, end_date))
+        else:
+            self.cursor.execute('SELECT * FROM split_history')
+        full_history = dict()
+        for row in self.cursor:
+            split_history = dict(split_id=row[0], company_id=row[1], split_date=row[2], ratio=row[3])
+            company = full_history.setdefault(split_history['company_id'], dict())
+            if not split_history['split_date']:
+                print('Empty split date {}'.format(split_history))
+            elif split_history['split_date'] not in company:
+                company[split_history['split_date']] = split_history
+            else:
+                print('Duplicate split found for {} {}'.format(split_history['company_id'], split_history['split_date']))
         return full_history
 
     def add_company_info(self, company_name, symbol, exchange, ipo, sector, industry):
