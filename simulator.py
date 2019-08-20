@@ -4,7 +4,8 @@ import app_config
 from database.mysql_db import MySQLDatabase
 from models.portfolio import Portfolio, StockHolding, Transaction
 from models.company import Company
-from traders.test import Test
+from traders.apple_buyer import Test
+from traders.simple_trader import SimpleTrader
 from exceptions import InsuficientFunds, NegativeQuantity
 
 class Simulator:
@@ -12,6 +13,7 @@ class Simulator:
         self.database = database
         self.price_history = database.get_price_history()
         self.dividend_history = database.get_dividend_history()
+        self.split_history = database.get_split_history()
         self.current_date = None
         self.datasets = {}
         self.last_prices = None
@@ -27,9 +29,14 @@ class Simulator:
                 for trade_date, price in self.price_history.get(company['company_id']).items():
                     if trade_date <= self.current_date:
                         comp.price_history[trade_date] = price
-                for trade_date, dividend in self.dividend_history.get(company['company_id']).items():
-                    if trade_date <= self.current_date:
-                        comp.dividend_history[trade_date] = dividend
+                if company['company_id'] in self.dividend_history:
+                    for trade_date, dividend in self.dividend_history.get(company['company_id']).items():
+                        if trade_date <= self.current_date:
+                            comp.dividend_history[trade_date] = dividend
+                if company['company_id'] in self.split_history:
+                    for trade_date, split in self.split_history.get(company['company_id']).items():
+                        if trade_date <= self.current_date:
+                            comp.split_history[trade_date] = split
                 self.datasets[company['symbol']] = comp
 
     def start(self, start_date, end_date, traders):
@@ -45,15 +52,19 @@ class Simulator:
             self.current_date = self.current_date + datetime.timedelta(days=1)
         for trader in traders:
             trader.print_profit(self.last_prices)
+            trader.print_portfolio(self.last_prices)
 
     def process_day(self, traders):
         for company in self.datasets.values():
             price = self.price_history.get(company.company_id, {}).get(self.current_date)
             dividend = self.dividend_history.get(company.company_id, {}).get(self.current_date)
+            split = self.split_history.get(company.company_id, {}).get(self.current_date)
             if price:
                 company.price_history[self.current_date] = price
             if dividend:
                 company.dividend_history[self.current_date] = dividend
+            if split:
+                company.split_history[self.current_date] = split
         for trader in traders:
             self.process_day_data(trader.get_portfolio())
             trader.process_day(self.current_date, self.datasets)
@@ -73,6 +84,11 @@ class Simulator:
                 portfolio.cash += payout
                 portfolio.cash -= payout * app_config.QUALIFIED_TAX_RATE
                 portfolio.taxes_paid += payout * app_config.QUALIFIED_TAX_RATE
+            split = self.split_history.get(stock.company_id, {}).get(self.current_date)
+            if split:
+                if not app_config.DEBUG:
+                    print("Processing split of {} on {} for {}".format(split['ratio'], self.current_date, stock.symbol))
+                stock.quantity *= split['ratio']
 
     def get_day_prices(self):
         prices = dict()
@@ -114,6 +130,9 @@ class Simulator:
         # TODO how to handle short term taxes
         portfolio.taxes_paid += transaction_value * app_config.QUALIFIED_TAX_RATE
         portfolio.cash -= transaction_value * app_config.QUALIFIED_TAX_RATE
+        if stock_holding.quantity == 0:
+            portfolio.previous_holdings.append(stock_holding)
+            del portfolio.stock_holdings[symbol]
         print('Sold {} of {} on {} for {:.2f}'.format(quantity, symbol, self.current_date, transaction_value))
 
 def main():
@@ -121,14 +140,14 @@ def main():
     #cash = float(input("Enter Starting Cash Balance:"))
     #start_date = input("Enter Starting Date:")
     #end_date = input("Enter End Date:")
-    start_date = datetime.date(2000, 1, 2)
-    end_date = datetime.date(2019, 3, 1)
+    start_date = datetime.date(2009, 8, 1)
+    end_date = datetime.date(2019, 8, 1)
     database = MySQLDatabase()
     database.connect(user=app_config.DB_USER, password=app_config.DB_PASS, database=app_config.DB_NAME)
     traders = []
     #TODO load all traders.  Auto vs config?
     simulator = Simulator(database=database)
-    traders.append(Test(simulator, 1000.0))
+    traders.append(SimpleTrader(simulator, 1100.0))
     simulator.start(start_date, end_date, traders)
     
 

@@ -16,6 +16,7 @@ class Transaction:
 class Portfolio:
     def __init__(self):
         self.stock_holdings = dict()
+        self.previous_holdings = []
         self.cash = 0
         self.starting_cash = 0
         self.taxes_paid = 0

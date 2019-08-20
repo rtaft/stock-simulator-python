@@ -5,4 +5,5 @@ class Company:
         self.info = None  # Company DB opbject
         self.dividend_history = {}
         self.price_history = {}
+        self.split_history = {}
 

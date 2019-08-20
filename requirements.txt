@@ -1,5 +1,6 @@
 lxml==4.3.4
 mysql-connector-python==8.0.16
+numpy==1.16.4
 pylint==2.3.1
 requests==2.22.0
 yfinance==0.1.43
