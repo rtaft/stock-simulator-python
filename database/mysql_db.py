@@ -114,6 +114,9 @@ class MySQLDatabase:
                 print('Duplicate split found for {} {}'.format(split_history['company_id'], split_history['split_date']))
         return full_history
 
+    def remove_split_history(self, company_id):
+        self.cursor.execute('DELETE FROM split_history WHERE company_id = {}'.format(company_id))
+
     def add_company_info(self, company_name, symbol, exchange, ipo, sector, industry):
         query = 'INSERT INTO company (company_name, symbol, exchange, ipo, sector, industry) VALUES (%s, %s, %s, %s, %s, %s)'
         self.cursor.execute(query, (company_name, symbol, exchange, ipo, sector, industry))
@@ -137,6 +140,20 @@ class MySQLDatabase:
                         symbol=row[2],
                         exchange=row[3])
             companies.setdefault(company['exchange'], dict())[company['symbol']] = company
+        return companies
+
+    def get_companies_by_id(self, company_ids=None):
+        companies = dict()
+        if company_ids:
+            self.cursor.execute('SELECT * from company WHERE company_id in ({})'.format(', '.join(['%s']*len(company_ids))), company_ids)
+        else:
+            self.cursor.execute('SELECT * from company')
+        for row in self.cursor:
+            company = dict(company_id=row[0],
+                        company_name=row[1],
+                        symbol=row[2],
+                        exchange=row[3])
+            companies[row[0]] = company
         return companies
     
     def find_company_by_symbol(self, symbol):

@@ -59,6 +59,7 @@ class Simulator:
             price = self.price_history.get(company.company_id, {}).get(self.current_date)
             dividend = self.dividend_history.get(company.company_id, {}).get(self.current_date)
             split = self.split_history.get(company.company_id, {}).get(self.current_date)
+
             if price:
                 company.price_history[self.current_date] = price
             if dividend:
@@ -99,7 +100,7 @@ class Simulator:
         return prices
 
     def buy(self, portfolio, symbol, quantity):
-        if quantity < 0:
+        if quantity <= 0:
             raise NegativeQuantity('Quantity is negative {}'.format(quantity))
         company_id = self.datasets[symbol].company_id
         stock_holding = portfolio.get_stock_holdings().get(symbol)
