@@ -72,8 +72,10 @@ class MySQLDatabase:
         query = 'INSERT INTO dividend_history (company_id, ex_date, dividend) VALUES (%s, %s, %s)'
         self.cursor.executemany(query, bulk_data)
 
-    def get_dividend_history(self, start_date=None, end_date=None):
-        if start_date and end_date:
+    def get_dividend_history(self, company_ids=None, start_date=None, end_date=None):
+        if company_ids:
+            self.cursor.execute('SELECT * FROM dividend_history where company_id in ({})'.format(', '.join(['%s']*len(company_ids))), company_ids)
+        elif start_date and end_date:
             self.cursor.execute('SELECT * FROM dividend_history where ex_date BETWEEN %s AND %s', (start_date, end_date))
         else:
             self.cursor.execute('SELECT * FROM dividend_history')
@@ -97,8 +99,10 @@ class MySQLDatabase:
         query = 'INSERT INTO split_history (company_id, split_date, ratio) VALUES (%s, %s, %s)'
         self.cursor.execute(query, (company_id, split_date, ratio))
 
-    def get_split_history(self, start_date=None, end_date=None):
-        if start_date and end_date:
+    def get_split_history(self, company_ids=None, start_date=None, end_date=None):
+        if company_ids:
+            self.cursor.execute('SELECT * FROM split_history where company_id in ({})'.format(', '.join(['%s']*len(company_ids))), company_ids)
+        elif start_date and end_date:
             self.cursor.execute('SELECT * FROM split_history where split_date BETWEEN %s AND %s', (start_date, end_date))
         else:
             self.cursor.execute('SELECT * FROM split_history')

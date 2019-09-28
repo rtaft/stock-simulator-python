@@ -24,7 +24,7 @@ class SyncHistory:
             print ('Progress: {}%'.format((self.total-len(self.symbols))*100//self.total), end='\r')
             symbol = symbols.pop()
             #print('Thread {} processing {}'.format(thread_id, symbol))
-            self.sync_stock_history(symbol, companies);
+            self.sync_stock_history(symbol, companies)
 
     def sync_all_stock_history_threaded(self, symbols, companies):
         self.total = len(symbols)
