@@ -9,7 +9,7 @@ class TraderInterface:
             self.portfolio = Portfolio()
             self.portfolio.add_cash(cash)
 
-    def setup(self):
+    def setup(self, params=None):
         raise NotImplementedError()
 
     def get_name(self):
@@ -28,8 +28,7 @@ class TraderInterface:
         self.simulation.sell(self.portfolio, symbol, quantity)
     
     def print_portfolio(self, todays_prices):
-        print (self.get_name())
-        self.portfolio.print_portfolio(todays_prices)
+        self.portfolio.print_portfolio(todays_prices, self.get_name())
     
     def print_profit(self, todays_prices):
         print ('Profit For {}: {:.2f}'.format(self.get_name(), self.portfolio.get_profit(todays_prices)))

@@ -5,29 +5,34 @@ import app_config
 import tools
 
 class SimpleTrader(TraderInterface):
-    def setup(self, params=None):
-        self.max_holdings = params.get('max_holding', 3)
-        self.loss_sell_ratio = params.get('loss_sell_ratio', 0.5)
-        self.gain_sell_ratio = params.get('gain_sell_ratio', 2)
-        self.minimum_transaction = params.get('minimum_transaction', 333)
+    def setup(self):
+        print('Setup called')
 
     def get_name(self):
         return 'Simple Trader'
 
     def process_day(self, current_date, dataset):
         # TODO gets stuck in infinate loop somewhere.
+
+        # check state of existing stock holdings
+            # sell stock if necessary
         ignore = []
         for holding in self.portfolio.get_stock_holdings_list():
             if dataset.get(holding.symbol).price_history.get(current_date, {}).get('trade_close'):
                 current_value = dataset.get(holding.symbol).price_history[current_date]['trade_close'] * holding.quantity
-                if current_value > (holding.cost_basis * self.gain_sell_ratio) or current_value < (holding.cost_basis * self.loss_sell_ratio):
+                #print('{} vs {}'.format(current_value, holding.cost_basis))
+                if current_value > (holding.cost_basis * 1.5) or current_value < (holding.cost_basis * 0.8):
                     self.simulation.sell(self.portfolio, holding.symbol, holding.quantity)
                     ignore.append(holding.symbol)
             else:
                 print('No History for {} on {}'.format(holding.symbol, current_date))
-        to_buy = self.max_holdings - len(self.portfolio.stock_holdings)
 
-        while to_buy and self.portfolio.cash > self.minimum_transaction:
+        # check if we have enough money to spend
+            # for each available stock
+                # check whether we want to buy it
+        to_buy = 3 - len(self.portfolio.stock_holdings)
+
+        while to_buy and self.portfolio.cash > 333:
             best_slope = 0
             best_company = None
             max_sale = (self.portfolio.cash - app_config.TRADE_FEES) / to_buy
@@ -40,11 +45,14 @@ class SimpleTrader(TraderInterface):
                     sma20 = get_simple_moving_average(company.price_history, 20, 1)[0]
                     sma50 = get_simple_moving_average(company.price_history, 50, 1)[0]
                     if sma20 and sma50:
-                        slope = (sma20 - sma50) / sma50
+                        slope = (sma50 - sma20) / sma20
                         if slope > best_slope:
                             best_slope = slope
                             best_company = company
             if best_company:
+                print(best_company.symbol)
+                #if best_company.symbol == 'FLUX':
+                #    print(best_company.price_history)
                 quantity = max_sale // best_company.price_history[current_date]['trade_close']
                 self.simulation.buy(self.portfolio, best_company.symbol, quantity)
                 ignore.append(best_company.symbol)

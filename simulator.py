@@ -1,5 +1,6 @@
 import datetime
 from time import sleep
+import time
 import app_config
 from database.mysql_db import MySQLDatabase
 from models.portfolio import Portfolio, StockHolding, Transaction
@@ -11,24 +12,35 @@ from exceptions import InsuficientFunds, NegativeQuantity
 class Simulator:
     def __init__(self, database):
         self.database = database
-        self.price_history = database.get_price_history()
-        self.dividend_history = database.get_dividend_history()
-        self.split_history = database.get_split_history()
+        self.price_history = dict()
+        self.dividend_history = dict()
+        self.split_history = dict()
         self.current_date = None
         self.datasets = {}
         self.last_prices = None
         self.todays_prices = None
 
     def setup_datasets(self):
-        company_ids = self.database.get_company_ids_in_price_history()
+        #company_ids = self.database.get_company_ids_in_price_history()
+        start = time.time()
+        companylist = self.database.get_current_stock_list('SP500')
+        companylist.update(self.database.get_current_stock_list('DOW'))
+        company_ids=[company['company_id'] for company in companylist.values()]
         companies = self.database.get_companies(company_ids=company_ids)
+        self.price_history = self.database.get_price_history(company_ids=company_ids)
+        self.dividend_history = self.database.get_dividend_history(company_ids=company_ids)
+        self.split_history = self.database.get_split_history(company_ids=company_ids)
         for exchange in companies:
             for company in companies[exchange].values():
                 comp = Company(symbol=company['symbol'], company_id=company['company_id'])
                 comp.info = company
-                for trade_date, price in self.price_history.get(company['company_id']).items():
-                    if trade_date <= self.current_date:
-                        comp.price_history[trade_date] = price
+                if company['company_id'] in self.price_history:
+                    for trade_date, price in self.price_history.get(company['company_id']).items():
+                        if trade_date <= self.current_date:
+                            comp.price_history[trade_date] = price
+                else:
+                    print('Could not find price history for {}'.format(company['symbol']))
+                    continue
                 if company['company_id'] in self.dividend_history:
                     for trade_date, dividend in self.dividend_history.get(company['company_id']).items():
                         if trade_date <= self.current_date:
@@ -38,6 +50,7 @@ class Simulator:
                         if trade_date <= self.current_date:
                             comp.split_history[trade_date] = split
                 self.datasets[company['symbol']] = comp
+        print('Data Load Took {:.0f}s'.format(time.time()-start))
 
     def start(self, start_date, end_date, traders):
         self.current_date = start_date
@@ -51,8 +64,8 @@ class Simulator:
                 self.process_day(traders)
             self.current_date = self.current_date + datetime.timedelta(days=1)
         for trader in traders:
-            trader.print_profit(self.last_prices)
             trader.print_portfolio(self.last_prices)
+            trader.print_profit(self.last_prices)
 
     def process_day(self, traders):
         for company in self.datasets.values():
@@ -107,6 +120,7 @@ class Simulator:
         current_price = self.price_history[company_id][self.current_date]['trade_close']
         transaction = Transaction(self.current_date, quantity, current_price, 'BUY')
         transaction_cost = current_price * quantity + app_config.TRADE_FEES
+        portfolio.fees += app_config.TRADE_FEES
 
         if transaction_cost > portfolio.cash:
             raise InsuficientFunds('Insuficient Funds {} > {}'.format(transaction_cost, portfolio.cash))
@@ -125,6 +139,7 @@ class Simulator:
         current_price = self.price_history[stock_holding.company_id][self.current_date]['trade_close']
         transaction = Transaction(self.current_date, -quantity, current_price, 'SELL')
         transaction_value = current_price * quantity - app_config.TRADE_FEES
+        portfolio.fees += app_config.TRADE_FEES
         stock_holding.transactions.append(transaction)
         stock_holding.quantity -= quantity
         portfolio.cash += transaction_value
@@ -141,14 +156,16 @@ def main():
     #cash = float(input("Enter Starting Cash Balance:"))
     #start_date = input("Enter Starting Date:")
     #end_date = input("Enter End Date:")
-    start_date = datetime.date(2009, 8, 1)
-    end_date = datetime.date(2019, 8, 1)
+    start_date = datetime.date(2006, 1, 1)
+    end_date = datetime.date(2019, 9, 1)
     database = MySQLDatabase()
     database.connect(user=app_config.DB_USER, password=app_config.DB_PASS, database=app_config.DB_NAME)
     traders = []
     #TODO load all traders.  Auto vs config?
     simulator = Simulator(database=database)
-    traders.append(SimpleTrader(simulator, 1100.0))
+    simple_trader = SimpleTrader(simulator, 60000.0)
+    simple_trader.setup(params=dict(max_holding=30, loss_sell_ratio=0.5, gain_sell_ratio=2.0, minimum_transaction=2000))
+    traders.append(simple_trader)
     simulator.start(start_date, end_date, traders)
     
 

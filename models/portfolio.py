@@ -20,6 +20,7 @@ class Portfolio:
         self.cash = 0
         self.starting_cash = 0
         self.taxes_paid = 0
+        self.fees = 0
 
     def add_cash(self, cash):
         self.cash += cash
@@ -40,14 +41,29 @@ class Portfolio:
     def get_portfolio_value(self, current_prices):
         return self.cash + self.get_stock_value(current_prices)
     
-    def print_portfolio(self, current_prices):
+    def print_portfolio(self, current_prices, name=None):
+        print ('===========================================================')
+        if name:
+            print('{}:'.format(name))
+
+        print ("Holdings:")
         for stock in self.stock_holdings.values():
             value = current_prices[stock.company_id] * stock.quantity
             print('\t{}: {}: {:.2f}'.format(stock.symbol, stock.quantity, value))
+        
+        print ("\nTransactions:")
+        for stock in self.previous_holdings:
+            total = 0
+            for transaction in stock.transactions:
+                total += transaction.transaction_price * transaction.transaction_quantity * -1
+            print('\t{}\t{:.2f}'.format(stock.symbol, total))
+
+        print('\nResult:')
         print('\tValue: {:.2f}'.format(self.get_stock_value(current_prices)))
         print('\tCash: {:.2f}'.format(self.cash))
+        print('\tFees: {:.2f}'.format(self.fees))
         print('\tTotal: {:.2f}'.format(self.get_portfolio_value(current_prices)))
-
+        print ('===========================================================')
     def get_profit(self, current_prices):
         return self.get_portfolio_value(current_prices) - self.starting_cash
 

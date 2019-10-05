@@ -8,6 +8,7 @@ def main():
     companies = database.get_companies_by_id()
     for company_id, company in companies.items():
         price_history = database.get_price_history(company_ids=[company_id])
+        split_history = database.get_split_history()
         if price_history:
             history = price_history[company_id]
             last_value = -1
