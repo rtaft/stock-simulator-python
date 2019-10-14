@@ -5,7 +5,7 @@
 <mdb-navbar SideClass="navbar navbar-expand-lg navbar-dark green" [containerInside]="false">
 
   <!-- Navbar brand -->
-  <mdb-navbar-brand><a class="navbar-brand" href="#">Navbar</a></mdb-navbar-brand>
+  <mdb-navbar-brand><a class="navbar-brand" href="#">StockSimulator</a></mdb-navbar-brand>
 
   <!-- Collapsible content -->
   <links>
@@ -15,23 +15,27 @@
           <li class="nav-item active">
               <a class="nav-link waves-light" mdbWavesEffect>Home<span class="sr-only">(current)</span></a>
           </li>
-          <li class="nav-item">
-              <a class="nav-link waves-light" mdbWavesEffect>Features</a>
-          </li>
-          <li class="nav-item">
-              <a class="nav-link waves-light" mdbWavesEffect>Pricing</a>
-          </li>
+          <!-- Dropdown -->
+          <li class="nav-item dropdown" dropdown>
+            <a dropdownToggle mdbWavesEffect type="button" class="nav-link dropdown-toggle waves-light" mdbWavesEffect>
+            Simulations<span class="caret"></span></a>
+            <div *dropdownMenu class="dropdown-menu dropdown dropdown-primary" role="menu">
+                <a class="dropdown-item waves-light" mdbWavesEffect href="#">Run Simulation</a>
+                <a class="dropdown-item waves-light" mdbWavesEffect href="#">View Simulations</a>
+                <a class="dropdown-item waves-light" mdbWavesEffect href="#">Add New Trader</a>
+                <div class="divider dropdown-divider"></div>
+                <a class="dropdown-item waves-light" mdbWavesEffect href="#">Simulation Settings</a>
+            </div>
+        </li>
 
           <!-- Dropdown -->
           <li class="nav-item dropdown" dropdown>
               <a dropdownToggle mdbWavesEffect type="button" class="nav-link dropdown-toggle waves-light" mdbWavesEffect>
-              Basic dropdown<span class="caret"></span></a>
+                Data<span class="caret"></span></a>
               <div *dropdownMenu class="dropdown-menu dropdown dropdown-primary" role="menu">
-                  <a class="dropdown-item waves-light" mdbWavesEffect href="#">Action</a>
-                  <a class="dropdown-item waves-light" mdbWavesEffect href="#">Another action</a>
-                  <a class="dropdown-item waves-light" mdbWavesEffect href="#">Something else here</a>
-                  <div class="divider dropdown-divider"></div>
-                  <a class="dropdown-item waves-light" mdbWavesEffect href="#">Separated link</a>
+                  <a class="dropdown-item waves-light" mdbWavesEffect href="#">View Current Datasets</a>
+                  <a class="dropdown-item waves-light" mdbWavesEffect href="#">Add New Dataset</a>
+                  <a class="dropdown-item waves-light" mdbWavesEffect href="#">Search Datasets</a>
               </div>
           </li>
 
