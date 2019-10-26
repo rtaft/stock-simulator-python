@@ -1,0 +1,53 @@
+
+<!--Navbar-->
+<mdb-navbar SideClass="navbar navbar-expand-lg navbar-dark green" [containerInside]="false">
+
+    <!-- Navbar brand -->
+    <mdb-navbar-brand><a class="navbar-brand" href="#">StockSimulator</a></mdb-navbar-brand>
+  
+    <!-- Collapsible content -->
+    <links>
+  
+        <!-- Links -->
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item active">
+                <a class="nav-link waves-light" routerLink="/" mdbWavesEffect>Dashboard</a>
+            </li>
+            <!-- Dropdown -->
+            <li class="nav-item dropdown" dropdown>
+                <a dropdownToggle mdbWavesEffect type="button" class="nav-link dropdown-toggle waves-light" mdbWavesEffect>
+                Simulations<span class="caret"></span></a>
+                <div *dropdownMenu class="dropdown-menu dropdown dropdown-primary" role="menu">
+                    <a class="dropdown-item waves-light" mdbWavesEffect href="#" routerLink="run">Run Simulation</a>
+                    <a class="dropdown-item waves-light" mdbWavesEffect href="#" routerLink="simulations">View Simulations</a>
+                    <a class="dropdown-item waves-light" mdbWavesEffect href="#" routerLink="traders">Traders</a>
+                    <div class="divider dropdown-divider"></div>
+                    <a class="dropdown-item waves-light" mdbWavesEffect href="#" routerLink="settings">Simulation Settings</a>
+                </div>
+            </li>
+  
+            <!-- Dropdown -->
+            <li class="nav-item dropdown" dropdown>
+                <a dropdownToggle mdbWavesEffect type="button" class="nav-link dropdown-toggle waves-light" mdbWavesEffect>
+                  Data<span class="caret"></span></a>
+                <div *dropdownMenu class="dropdown-menu dropdown dropdown-primary" role="menu">
+                    <a class="dropdown-item waves-light" mdbWavesEffect href="#" routerLink="data/view">View Datasets</a>
+                    <a class="dropdown-item waves-light" mdbWavesEffect href="#" routerLink="data/add">Add New Dataset</a>
+                    <a class="dropdown-item waves-light" mdbWavesEffect href="#" routerLink="data/search">Search Datasets</a>
+                </div>
+            </li>
+  
+        </ul>
+        <!-- Links -->
+  
+  <!-- Search form -->
+        <form class="form-inline waves-light" mdbWavesEffect>
+            <div class="md-form my-0">
+                <input class="form-control mr-sm-2" type="text" placeholder="Search">
+            </div>
+        </form>
+    </links>
+    <!-- Collapsible content -->
+  
+  </mdb-navbar>
+  <!--/.Navbar-->
