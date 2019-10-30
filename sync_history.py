@@ -64,7 +64,7 @@ class SyncHistory:
                         return
                 #else:
                 #    print ("Found {}".format(data.info.get('symbol')))
-                history = data.history(period="max", auto_adjust=False)
+                history = data.history(period="max", auto_adjust=False, rounding=False)
                 self.store_full_history(company, history)
             except Exception as e:
                 print('{} FAILED TO LOAD'.format(symbol))

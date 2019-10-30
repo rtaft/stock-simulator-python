@@ -114,3 +114,4 @@ temp/
 # project specific
 app_config.py
 stocks.db
+package-lock.json
