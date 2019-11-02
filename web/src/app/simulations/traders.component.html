@@ -1,3 +1,27 @@
 <h1>Traders</h1>
 
-<div *ngFor="let trader of traders">{{ trader }}</div>
+<div *ngFor="let trader of traders">{{ trader.trader_id }}. {{ trader.name }}</div>
+
+<h4>Add New Trader</h4>
+<div>
+    <label for="name">Name:</label>
+    <input type="text" id="name" [(ngModel)]='newTrader.name'/>
+</div>
+<div>
+    <label for="traderLocation">Location:</label>
+    <select id="traderLocation" [(ngModel)]="traderLocation">
+        <option value='local'>Local Disk</option>
+        <option value='repo'>Repository</option>
+        <option value='upload'>File Upload</option>
+    </select>
+</div>
+<div *ngIf="traderLocation == 'local'">
+    <label for='fileLocation'>File:</label>
+    <select id='fileLocation'  [(ngModel)]="fileLocation">
+        <option value='0'>-- SELECT --</option>
+        <option *ngFor="let trader of tradersOnDisk" value="{{ trader }}">{{ trader }}</option>
+    </select>
+</div>
+<div>
+    <button (click)="addTrader()">Add Trader</button>
+</div>

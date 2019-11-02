@@ -3,6 +3,7 @@ import flask
 from flask_restful import Api
 import requests
 from functools import wraps
+import threading
 
 from api.exceptions import HttpError
 from api import helpers
@@ -16,6 +17,7 @@ DB = MySQLDatabase()
 
 @APP.before_request
 def setup():
+    #TODO how to handle this multithreaded
     DB.connect(user=app_config.DB_USER, password=app_config.DB_PASS, database=app_config.DB_NAME)
 
 

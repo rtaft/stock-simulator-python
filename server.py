@@ -29,4 +29,4 @@ def import_submodules(package):
 import_submodules(pub)
 
 if __name__ == "__main__":
-    APP.run(host='0.0.0.0', port=app_config.API_PORT, debug=True)
+    APP.run(host='0.0.0.0', port=app_config.API_PORT, debug=True, threaded=False)

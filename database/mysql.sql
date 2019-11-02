@@ -52,3 +52,11 @@ CREATE TABLE IF NOT EXISTS stock_list_data (
     FOREIGN KEY(company_id) REFERENCES company(company_id),
     FOREIGN KEY(list_id) REFERENCES stock_list(list_id)
 );
+
+CREATE TABLE IF NOT EXISTS traders (
+    trader_id INT AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL,
+    location VARCHAR(2000) NOT NULL,
+    
+    PRIMARY KEY (trader_id)
+);

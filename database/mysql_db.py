@@ -193,3 +193,22 @@ class MySQLDatabase:
                            exchange=row[3])
             companies[company['symbol']] = company
         return companies
+
+    def get_traders(self):
+        self.cursor.execute('SELECT * from traders')
+        traders = []
+        for row in self.cursor:
+            trader = dict(trader_id=row[0],
+                          name=row[1],
+                          location=row[2])
+            traders.append(trader)
+        return traders
+    
+    def add_trader(self, name, location):
+        self.cursor.execute('INSERT INTO traders (name, location) VALUES (%s, %s)', (name, location))
+    
+    def edit_trader(self, trader_id, name):
+        self.cursor.execute('UPDATE traders set name = %s where trader_id = %s', (name, trader_id))
+    
+    def delete_trader(self, trader_id):
+        self.cursor.execute('DELETE FROM traders WHERE trader_id = %s', (trader_id))

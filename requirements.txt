@@ -1,6 +1,7 @@
 flask==1.1.1
 flask_restful==0.3.7
 lxml==4.3.4
+marshmallow==3.2.1
 mysql-connector-python==8.0.16
 numpy==1.16.4
 pylint==2.3.1
