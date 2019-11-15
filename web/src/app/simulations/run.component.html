@@ -1,1 +1,33 @@
-<p>run works!</p>
+<h1>Run Simulation</h1>
+
+<h4>Select a Trader</h4>
+<div>
+    <label for="traderLocation">Location:</label>
+    <select id="traderLocation" [(ngModel)]="traderLocation">
+        <option value='local'>Local Disk</option>
+        <option value='repo'>Repository</option>
+        <option value='upload'>File Upload</option>
+    </select>
+</div>
+<div *ngIf="traderLocation == 'local'">
+    <label for='fileLocation'>File:</label>
+    <select id='fileLocation'  [(ngModel)]="fileLocation">
+        <option value='0'>-- SELECT --</option>
+        <option *ngFor="let trader of tradersOnDisk" value="{{ trader }}">{{ trader }}</option>
+    </select>
+</div>
+<div *ngIf="traderLocation == 'repo'" id="divRepo">
+    <label>Repo Selections</label>
+</div>
+<div *ngIf="traderLocation == 'upload'" id="divUpload">
+    <label>Uploaded Trader Selections</label>
+</div>
+
+<h4>Simulation Date Range</h4>
+<div>
+    <label for="startDate">Start Date:</label>
+    <input type="date" id="startDate" [(ngModel)]="tradeStartDate" required />
+    <label class="pad10"> to </label>
+    <label for="endDate">End Date:</label>
+    <input type="date" id="endDate" [(ngModel)]="tradeEndDate" />
+</div>
