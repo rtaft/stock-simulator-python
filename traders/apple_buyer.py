@@ -3,8 +3,8 @@ from traders.interface import TraderInterface
 import app_config
 import tools
 
-class Test(TraderInterface):
-    def setup(self):
+class AppleBuyer(TraderInterface):
+    def setup(self, params=None):
         print('Setup called')
 
     def get_name(self):

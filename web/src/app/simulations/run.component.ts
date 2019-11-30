@@ -3,6 +3,7 @@ import { Component, OnInit, ɵɵcontainerRefreshEnd } from '@angular/core';
 import { Trader } from '../models/trader';
 
 import { TraderService } from '../services/traders';
+import { SimulationService } from '../services/simulations';
 
 @Component({
   selector: 'app-run',
@@ -10,21 +11,23 @@ import { TraderService } from '../services/traders';
   styleUrls: ['./run.component.scss']
 })
 export class RunComponent implements OnInit {
-  newTrader = new Trader()
-  traderLocation = 'local';
-  fileLocation: string = '0';
-
-  tradersOnDisk: string[] = []
   traders: Trader[] = []
-  constructor(private traderService: TraderService) { }
+  selectedTrader: String = '0';
+  tradeStartDate: Date;
+  tradeEndDate: Date;
+  simulationId: Number;
+  
+  constructor(private traderService: TraderService, private simulationService: SimulationService) { }
 
   ngOnInit() {
     this.refresh();
   }
 
   refresh() {
-    this.traderService.listTraders().toPromise().then( result => this.traders = result)
-    this.traderService.listTradersOnDisk().toPromise().then( result => this.tradersOnDisk = result)
+    this.traderService.listTraders().toPromise().then( result => this.traders = result);
   }
 
+  runSimulation() {
+    this.simulationService.runSimulation(this.selectedTrader, this.tradeStartDate, this.tradeEndDate).toPromise().then( result => this.simulationId = result);
+  }
 }

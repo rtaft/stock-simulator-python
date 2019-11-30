@@ -19,6 +19,7 @@ import { SearchComponent } from './data/search.component';
 
 /* Services */
 import { TraderService } from './services/traders';
+import { SimulationService } from './services/simulations';
 
 @NgModule({
   declarations: [
@@ -41,6 +42,7 @@ import { TraderService } from './services/traders';
     MDBBootstrapModule.forRoot()
   ],
   providers: [
+    SimulationService,
     TraderService
   ],
   bootstrap: [AppComponent]

@@ -194,8 +194,13 @@ class MySQLDatabase:
             companies[company['symbol']] = company
         return companies
 
-    def get_traders(self):
-        self.cursor.execute('SELECT * from traders')
+    def get_traders(self, trader_ids=None):
+        if trader_ids:
+            #traders.select().where(trader_id=trader_ids)
+            print('SELECT * FROM traders WHERE trader_id IN ({})'.format(', '.join(['%s']*len(trader_ids))))
+            self.cursor.execute('SELECT * FROM traders WHERE trader_id IN ({})'.format(', '.join(['%s']*len(trader_ids))), trader_ids)
+        else:
+            self.cursor.execute('SELECT * FROM traders')
         traders = []
         for row in self.cursor:
             trader = dict(trader_id=row[0],
@@ -203,7 +208,7 @@ class MySQLDatabase:
                           location=row[2])
             traders.append(trader)
         return traders
-    
+
     def add_trader(self, name, location):
         self.cursor.execute('INSERT INTO traders (name, location) VALUES (%s, %s)', (name, location))
     

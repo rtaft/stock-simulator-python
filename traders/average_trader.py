@@ -4,12 +4,12 @@ from traders.interface import TraderInterface
 import app_config
 import tools
 
-class SimpleTrader(TraderInterface):
-    def setup(self):
+class AverageTrader(TraderInterface):
+    def setup(self, params=None):
         print('Setup called')
 
     def get_name(self):
-        return 'Simple Trader'
+        return 'Average Trader'
 
     def process_day(self, current_date, dataset):
         # TODO gets stuck in infinate loop somewhere.

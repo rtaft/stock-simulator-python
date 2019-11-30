@@ -5,7 +5,6 @@ import app_config
 from database.mysql_db import MySQLDatabase
 from models.portfolio import Portfolio, StockHolding, Transaction
 from models.company import Company
-from traders.apple_buyer import Test
 from traders.simple_trader import SimpleTrader
 from exceptions import InsuficientFunds, NegativeQuantity
 
