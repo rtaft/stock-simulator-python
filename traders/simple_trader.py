@@ -21,7 +21,7 @@ class SimpleTrader(TraderInterface):
             if dataset.get(holding.symbol).price_history.get(current_date, {}).get('trade_close'):
                 current_value = dataset.get(holding.symbol).price_history[current_date]['trade_close'] * holding.quantity
                 if current_value > (holding.cost_basis * self.gain_sell_ratio) or current_value < (holding.cost_basis * self.loss_sell_ratio):
-                    self.simulation.sell(self.portfolio, holding.symbol, holding.quantity)
+                    self.simulator.sell(self, holding.symbol, holding.quantity)
                     ignore.append(holding.symbol)
             else:
                 print('No History for {} on {}'.format(holding.symbol, current_date))
@@ -46,7 +46,7 @@ class SimpleTrader(TraderInterface):
                             best_company = company
             if best_company:
                 quantity = max_sale // best_company.price_history[current_date]['trade_close']
-                self.simulation.buy(self.portfolio, best_company.symbol, quantity)
+                self.simulator.buy(self, best_company.symbol, quantity)
                 ignore.append(best_company.symbol)
                 to_buy -= 1
             else:

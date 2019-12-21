@@ -115,3 +115,4 @@ temp/
 app_config.py
 stocks.db
 package-lock.json
+database/database.py

@@ -7,11 +7,13 @@ class StockHolding:
         self.transactions = []
 
 class Transaction:
-    def __init__(self, transaction_date, transaction_quantity, transaction_price, transaction_type):
+    def __init__(self, simulation_id, transaction_date, transaction_quantity, transaction_price, transaction_type, symbol):
+        self.simulation_id = simulation_id
         self.transaction_quantity = transaction_quantity
         self.transaction_date = transaction_date
         self.transaction_price = transaction_price
         self.transaction_type = transaction_type
+        self.symbol = symbol
 
 class Portfolio:
     def __init__(self):

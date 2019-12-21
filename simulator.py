@@ -5,6 +5,7 @@ import app_config
 from database.mysql_db import MySQLDatabase
 from models.portfolio import Portfolio, StockHolding, Transaction
 from models.company import Company
+from models.simulation import Simulation
 from traders.simple_trader import SimpleTrader
 from exceptions import InsuficientFunds, NegativeQuantity
 
@@ -111,43 +112,45 @@ class Simulator:
                 prices[company.company_id] = price['trade_close']
         return prices
 
-    def buy(self, portfolio, symbol, quantity):
+    def buy(self, trader, symbol, quantity):
         if quantity <= 0:
             raise NegativeQuantity('Quantity is negative {}'.format(quantity))
         company_id = self.datasets[symbol].company_id
-        stock_holding = portfolio.get_stock_holdings().get(symbol)
+        stock_holding = trader.portfolio.get_stock_holdings().get(symbol)
         current_price = self.price_history[company_id][self.current_date]['trade_close']
-        transaction = Transaction(self.current_date, quantity, current_price, 'BUY')
+        transaction = Transaction(trader.simulation.simulation_id, self.current_date, quantity, current_price, 'BUY', symbol)
         transaction_cost = current_price * quantity + app_config.TRADE_FEES
-        portfolio.fees += app_config.TRADE_FEES
+        trader.portfolio.fees += app_config.TRADE_FEES
 
-        if transaction_cost > portfolio.cash:
-            raise InsuficientFunds('Insuficient Funds {} > {}'.format(transaction_cost, portfolio.cash))
+        if transaction_cost > trader.portfolio.cash:
+            raise InsuficientFunds('Insuficient Funds {} > {}'.format(transaction_cost, trader.portfolio.cash))
 
         if not stock_holding:
             stock_holding = StockHolding(company_id=company_id, symbol=symbol)
-            portfolio.stock_holdings[symbol] = stock_holding
+            trader.portfolio.stock_holdings[symbol] = stock_holding
         stock_holding.transactions.append(transaction)
+        self.database.add_transaction(transaction.simulation_id, transaction.transaction_date, transaction.transaction_quantity, transaction.transaction_price, transaction.transaction_type, symbol)
         stock_holding.quantity += quantity
         stock_holding.cost_basis += transaction_cost
-        portfolio.cash -= transaction_cost
+        trader.portfolio.cash -= transaction_cost
         print('Purchased {} of {} on {} for {:.2f}'.format(quantity, symbol, self.current_date, transaction_cost))
     
-    def sell(self, portfolio, symbol, quantity):
-        stock_holding = portfolio.get_stock_holdings().get(symbol)
+    def sell(self, trader, symbol, quantity):
+        stock_holding = trader.portfolio.get_stock_holdings().get(symbol)
         current_price = self.price_history[stock_holding.company_id][self.current_date]['trade_close']
-        transaction = Transaction(self.current_date, -quantity, current_price, 'SELL')
+        transaction = Transaction(trader.simulation.simulation_id, self.current_date, -quantity, current_price, 'SELL', symbol)
         transaction_value = current_price * quantity - app_config.TRADE_FEES
-        portfolio.fees += app_config.TRADE_FEES
+        trader.portfolio.fees += app_config.TRADE_FEES
         stock_holding.transactions.append(transaction)
+        self.database.add_transaction(transaction.simulation_id, transaction.transaction_date, transaction.transaction_quantity, transaction.transaction_price, transaction.transaction_type, symbol)
         stock_holding.quantity -= quantity
-        portfolio.cash += transaction_value
+        trader.portfolio.cash += transaction_value
         # TODO how to handle short term taxes
-        portfolio.taxes_paid += transaction_value * app_config.QUALIFIED_TAX_RATE
-        portfolio.cash -= transaction_value * app_config.QUALIFIED_TAX_RATE
+        trader.portfolio.taxes_paid += transaction_value * app_config.QUALIFIED_TAX_RATE
+        trader.portfolio.cash -= transaction_value * app_config.QUALIFIED_TAX_RATE
         if stock_holding.quantity == 0:
-            portfolio.previous_holdings.append(stock_holding)
-            del portfolio.stock_holdings[symbol]
+            trader.portfolio.previous_holdings.append(stock_holding)
+            del trader.portfolio.stock_holdings[symbol]
         print('Sold {} of {} on {} for {:.2f}'.format(quantity, symbol, self.current_date, transaction_value))
 
 def main():
@@ -155,18 +158,22 @@ def main():
     #cash = float(input("Enter Starting Cash Balance:"))
     #start_date = input("Enter Starting Date:")
     #end_date = input("Enter End Date:")
-    start_date = datetime.date(2006, 1, 1)
-    end_date = datetime.date(2019, 9, 1)
+    start_date = datetime.date(2016, 1, 1)
+    end_date = datetime.date(2017, 1, 1)
+    starting_balance = 60000
     database = MySQLDatabase()
     database.connect(user=app_config.DB_USER, password=app_config.DB_PASS, database=app_config.DB_NAME)
     traders = []
     #TODO load all traders.  Auto vs config?
     simulator = Simulator(database=database)
-    simple_trader = SimpleTrader(simulator, 60000.0)
+    simple_trader = SimpleTrader(simulator, starting_balance)
     simple_trader.setup(params=dict(max_holding=30, loss_sell_ratio=0.5, gain_sell_ratio=2.0, minimum_transaction=2000))
+    simulation = Simulation(1, start_date, end_date, starting_balance, datetime.datetime.now(), None, 'Temp Description')
+    simple_trader.simulation = simulation
+    simulation.simulation_id = database.add_simulation(start_date, end_date, starting_balance, datetime.datetime.now(), None, 'Temp Description')
     traders.append(simple_trader)
     simulator.start(start_date, end_date, traders)
-    
+    database.commit()
 
 if __name__ == "__main__":
     main()

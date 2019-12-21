@@ -217,3 +217,13 @@ class MySQLDatabase:
     
     def delete_trader(self, trader_id):
         self.cursor.execute('DELETE FROM traders WHERE trader_id = %s', (trader_id))
+
+    def add_simulation(self, start_date, end_date, starting_balance, simulation_date, trader_id, description):
+        self.cursor.execute('INSERT INTO simulation (start_date, end_date, starting_balance, simulation_date, trader_id, description) VALUES (%s, %s, %s, %s, %s, %s)', 
+                            (start_date, end_date, starting_balance, simulation_date, trader_id, description))
+        return self.cursor.lastrowid
+    
+    def add_transaction(self, simulation_id, transaction_date, transaction_quantity, transaction_price, transaction_type, symbol):
+        self.cursor.execute('INSERT INTO transaction (simulation_id, transaction_date, transaction_quantity, transaction_price, transaction_type, symbol) values (%s, %s, %s, %s, %s, %s)',
+                             (simulation_id, transaction_date, transaction_quantity, transaction_price, transaction_type, symbol))
+        return self.cursor.lastrowid

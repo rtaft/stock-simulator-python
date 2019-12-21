@@ -22,7 +22,7 @@ class AverageTrader(TraderInterface):
                 current_value = dataset.get(holding.symbol).price_history[current_date]['trade_close'] * holding.quantity
                 #print('{} vs {}'.format(current_value, holding.cost_basis))
                 if current_value > (holding.cost_basis * 1.5) or current_value < (holding.cost_basis * 0.8):
-                    self.simulation.sell(self.portfolio, holding.symbol, holding.quantity)
+                    self.simulator.sell(self, holding.symbol, holding.quantity)
                     ignore.append(holding.symbol)
             else:
                 print('No History for {} on {}'.format(holding.symbol, current_date))
@@ -54,7 +54,7 @@ class AverageTrader(TraderInterface):
                 #if best_company.symbol == 'FLUX':
                 #    print(best_company.price_history)
                 quantity = max_sale // best_company.price_history[current_date]['trade_close']
-                self.simulation.buy(self.portfolio, best_company.symbol, quantity)
+                self.simulator.buy(self, best_company.symbol, quantity)
                 ignore.append(best_company.symbol)
                 to_buy -= 1
             else:

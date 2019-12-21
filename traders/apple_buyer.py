@@ -17,5 +17,5 @@ class AppleBuyer(TraderInterface):
             tools.bollinger_bands(apple.price_history, 60, 20)
             if current_date in apple.price_history and (self.portfolio.cash - app_config.TRADE_FEES) > apple.price_history[current_date]['trade_close']:
                 quantity = (self.portfolio.cash - app_config.TRADE_FEES) // apple.price_history[current_date]['trade_close']
-                self.simulation.buy(self.portfolio, 'AAPL', quantity)
+                self.simulator.buy(self, 'AAPL', quantity)
         

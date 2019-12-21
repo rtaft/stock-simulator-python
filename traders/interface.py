@@ -1,8 +1,8 @@
 from models.portfolio import Portfolio
 
 class TraderInterface:
-    def __init__(self, simulation, cash=0, portfolio=None):
-        self.simulation = simulation
+    def __init__(self, simulator, cash=0, portfolio=None):
+        self.simulator = simulator
         if portfolio:
             self.portfolio = portfolio
         else:
@@ -22,10 +22,10 @@ class TraderInterface:
         return self.portfolio
 
     def buy(self, symbol, quantity):
-        self.simulation.buy(self.portfolio, symbol, quantity)
+        self.simulator.buy(self.portfolio, symbol, quantity)
     
     def sell(self, symbol, quantity):
-        self.simulation.sell(self.portfolio, symbol, quantity)
+        self.simulator.sell(self.portfolio, symbol, quantity)
     
     def print_portfolio(self, todays_prices):
         self.portfolio.print_portfolio(todays_prices, self.get_name())
