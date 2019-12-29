@@ -1,12 +1,16 @@
 import math
 import yfinance as yf
+from sqlalchemy import create_engine, and_, distinct
+from sqlalchemy.orm import sessionmaker
 import app_config
 from database import db
 from datetime import date
+from database.price_history import get_price_history
+
 class SyncDaily():
 
-    def __init__(self, database):
-        self.database = database
+    def __init__(self, session):
+        self.session = session
 
     def download_recent(self, start, symbols, companies, existing_history):
         data = yf.download(" ".join(symbols), start=start, end=date.today())
@@ -19,11 +23,14 @@ class SyncDaily():
         # TODO dividends and splits
 
 if __name__ == "__main__":
-    database = db.connect()
+    engine = create_engine('{}://{}:{}@localhost/{}'.format(app_config.DB_TYPE, app_config.DB_USER, app_config.DB_PASS, app_config.DB_NAME))
+    engine.connect()
+    Session = sessionmaker(bind=engine)
+    session = Session()
     start = "1960-06-21"
-    sync_daily = SyncDaily(database)
+    sync_daily = SyncDaily(session)
     companies = database.get_current_stock_list('DOW')
-    history = database.get_price_history(start_date=start, end_date=date.today())
+    history = get_price_history(session, start_date=start, end_date=date.today())
     sync_daily.download_recent(start, companies.keys(), companies, history)
-    database.commit()
-    database.close()
+    session.commit()
+    session.close()

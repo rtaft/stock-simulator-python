@@ -14,4 +14,5 @@ venv/bin/activate:
 	test -d venv || virtualenv -p /usr/bin/python3 venv
 
 gendb: venv
+	#sqlacodegen --noclasses --noinflect --noindexes --nojoined --noconstraints  mysql+mysqlconnector://traderjoe:stockman@localhost/stocks > database/database.py
 	sqlacodegen mysql+mysqlconnector://traderjoe:stockman@localhost/stocks > database/database.py

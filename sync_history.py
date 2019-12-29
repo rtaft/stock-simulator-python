@@ -1,22 +1,26 @@
 import math
 import yfinance as yf
 import pprint
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 import time
 import threading
 
 import app_config
+from database.price_history import insert_price_history_bulk, remove_price_history, get_company_ids_in_price_history
+from database.database import PriceHistory
 from database.mysql_db import MySQLDatabase
 
 class SyncHistory:
-    def __init__(self, database, threads):
+    def __init__(self, session, threads):
         self.running = True
         self.companies = None
         self.symbols = None
         self.total = 0
         self.data_to_process = []
-        self.database = database
         self.threads = threads
         self.lock = threading.Lock()
+        self.session = session
         
     def process_stock_history(self, thread_id):
 #        print(self.symbols)
@@ -58,7 +62,7 @@ class SyncHistory:
                         company = self.database.add_company_info(data.info.get('longName'),
                                                                  data.info.get('symbol'),
                                                                  data.info.get('fullExchangeName'), 0, '', '') # TODO
-                        self.database.commit()
+                        self.session.commit()
                         self.lock.release()
                     else:
                         return
@@ -83,7 +87,10 @@ class SyncHistory:
                     multiplier *= float(history.loc[index, 'Stock Splits'])
                     splits.append((company.get('company_id'), index, float(history.loc[index, 'Stock Splits'])))
                 if not math.isnan(history.loc[index, 'Close']):
-                    price_history.append((company.get('company_id'), index, round(float(history.loc[index, 'Close'] * multiplier), 2), int(history.loc[index, 'Volume'])))
+                    price_history.append(PriceHistory(company_id=company.get('company_id'), 
+                                                      trade_date=index,
+                                                      trade_close=round(float(history.loc[index, 'Close'] * multiplier), 2),
+                                                      trade_volume=int(history.loc[index, 'Volume'])))
                 if history.loc[index, 'Dividends']:
                     dividends.append((company.get('company_id'), index, round(float(history.loc[index, 'Dividends'] * multiplier), 3)))
             except:
@@ -110,11 +117,11 @@ class SyncHistory:
     def store_data(self, data):
         try:
             self.lock.acquire()
-            self.database.remove_price_history(company_id=data.get('company_id'))
+            remove_price_history(self.session, company_id=data.get('company_id'))
             self.database.remove_dividend_history(company_id=data.get('company_id'))
             self.database.remove_split_history(company_id=data.get('company_id'))
             self.database.insert_dividend_bulk(data['dividends'])
-            self.database.insert_price_history_bulk(data['price_history'])
+            insert_price_history_bulk(self.session, data['price_history'])
             self.database.insert_splits_bulk(data['splits'])
             self.database.commit()
         except Exception as e:
@@ -123,9 +130,11 @@ class SyncHistory:
             self.lock.release()
 
 if __name__ == "__main__":
-    database = MySQLDatabase()
-    database.connect(user=app_config.DB_USER, password=app_config.DB_PASS, database=app_config.DB_NAME)
-    sync_history = SyncHistory(database, 10)
+    engine = create_engine('{}://{}:{}@localhost/{}'.format(app_config.DB_TYPE, app_config.DB_USER, app_config.DB_PASS, app_config.DB_NAME))
+    engine.connect()
+    Session = sessionmaker(bind=engine)
+    session = Session()
+    sync_history = SyncHistory(session, 10)
     #companies = database.get_current_stock_list('SP500').values()
     #companies = database.get_current_stock_list('DOW')
     companies_by_exchange = database.get_companies()
@@ -134,7 +143,7 @@ if __name__ == "__main__":
         companies.update(company_dict)
     print('Processing {} companies'.format(len(companies)))
     symbols = []
-    ignore_company_ids = database.get_company_ids_in_price_history()
+    ignore_company_ids = get_company_ids_in_price_history(session)
     #for symbol, company in companies.items():
     #for exchange, company_list in companies.items():
     for symbol, company in companies.items():
