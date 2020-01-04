@@ -45,10 +45,12 @@ CREATE TABLE IF NOT EXISTS stock_list (
 );
 
 CREATE TABLE IF NOT EXISTS stock_list_data (
+    data_id INT AUTO_INCREMENT,
     company_id INT NOT NULL,
     list_id INT NOT NULL,
     date_added DATE,
     date_removed DATE,
+    PRIMARY KEY (data_id),
     FOREIGN KEY(company_id) REFERENCES company(company_id),
     FOREIGN KEY(list_id) REFERENCES stock_list(list_id)
 );

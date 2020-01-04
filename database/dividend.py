@@ -28,5 +28,5 @@ def get_dividend_history(session, company_ids=None, start_date=None, end_date=No
         elif dividend_history.ex_date not in company:
             company[dividend_history.ex_date] = dividend_history
         else:
-            print('Duplicate Dividend found for {} {}'.format(dividend_history['company_id'], dividend_history['ex_date']))
+            print('Duplicate Dividend found for {} {}'.format(dividend_history.company_id, dividend_history.ex_date))
     return full_history

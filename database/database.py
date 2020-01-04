@@ -1,5 +1,5 @@
 # coding: utf-8
-from sqlalchemy import Column, Date, Float, ForeignKey, Index, String, TIMESTAMP, Table, text
+from sqlalchemy import Column, Date, Float, ForeignKey, Index, String, TIMESTAMP, text
 from sqlalchemy.dialects.mysql import INTEGER
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
@@ -84,13 +84,17 @@ class SplitHistory(Base):
     company = relationship('Company')
 
 
-t_stock_list_data = Table(
-    'stock_list_data', metadata,
-    Column('company_id', ForeignKey('company.company_id'), nullable=False, index=True),
-    Column('list_id', ForeignKey('stock_list.list_id'), nullable=False, index=True),
-    Column('date_added', Date),
-    Column('date_removed', Date)
-)
+class StockListDatum(Base):
+    __tablename__ = 'stock_list_data'
+
+    company_id = Column(ForeignKey('company.company_id'), nullable=False, index=True)
+    list_id = Column(ForeignKey('stock_list.list_id'), nullable=False, index=True)
+    date_added = Column(Date)
+    date_removed = Column(Date)
+    data_id = Column(INTEGER(11), primary_key=True)
+
+    company = relationship('Company')
+    list = relationship('StockList')
 
 
 class Transaction(Base):
