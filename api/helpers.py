@@ -6,6 +6,8 @@ import re
 
 import flask
 
+from database.database import Base
+
 ######################################################################################
 # Generic Constants
 ######################################################################################
@@ -87,8 +89,22 @@ def success(body=None):
     :param body: Response body
     :return: Flask Response Object
     """
-    return make_json_response(200, body)
+    if isinstance(body, (Base)):
+        obj = dict(body.__dict__)
+        del obj['_sa_instance_state']
+        return make_json_response(200, obj)
 
+    if isinstance(body, (list)):
+        if len(body) > 0:
+            if isinstance(body[0], (Base)):
+                data = []
+                for item in body:
+                    obj = dict(item.__dict__)
+                    del obj['_sa_instance_state']
+                    data.append(obj)
+                return make_json_response(200, data)
+
+    return make_json_response(200, body)
 
 def created(body=None):
     """

@@ -8,7 +8,7 @@ def get_traders(session, trader_ids=None):
         query = query.filter(Trader.trader_id.in_(trader_ids))
     
     traders = []
-    for trader in Trader:
+    for trader in query.all():
         traders.append(trader)
     return traders
 

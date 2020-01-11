@@ -11,15 +11,15 @@ class AverageTrader(TraderInterface):
     def get_name(self):
         return 'Average Trader'
 
-    def process_day(self, current_date, dataset):
+    def process_day(self, current_date, datasets):
         # TODO gets stuck in infinate loop somewhere.
 
         # check state of existing stock holdings
             # sell stock if necessary
         ignore = []
         for holding in self.portfolio.get_stock_holdings_list():
-            if dataset.get(holding.symbol).price_history.get(current_date, {}).get('trade_close'):
-                current_value = dataset.get(holding.symbol).price_history[current_date]['trade_close'] * holding.quantity
+            if datasets.get(holding.symbol).price_history.get(current_date, {}).trade_close:
+                current_value = datasets.get(holding.symbol).price_history[current_date].trade_close * holding.quantity
                 #print('{} vs {}'.format(current_value, holding.cost_basis))
                 if current_value > (holding.cost_basis * 1.5) or current_value < (holding.cost_basis * 0.8):
                     self.simulator.sell(self, holding.symbol, holding.quantity)

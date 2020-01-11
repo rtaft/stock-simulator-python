@@ -8,18 +8,25 @@ import threading
 from api.exceptions import HttpError
 from api import helpers
 
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 import app_config
-from database.mysql_db import MySQLDatabase
 
 APP = Flask(__name__)
 API = Api(APP)
-DB = MySQLDatabase()
+
+
+def connect():
+    engine = create_engine('{}://{}:{}@localhost/{}'.format(app_config.DB_TYPE, app_config.DB_USER, app_config.DB_PASS, app_config.DB_NAME))
+    engine.connect()
+    Session = sessionmaker(bind=engine)
+    return Session()
+
+DB = connect()
 
 @APP.before_request
 def setup():
-    #TODO how to handle this multithreaded
-    DB.connect(user=app_config.DB_USER, password=app_config.DB_PASS, database=app_config.DB_NAME)
-
+    pass
 
 @APP.teardown_request
 def teardown(response):

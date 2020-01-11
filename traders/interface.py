@@ -1,8 +1,9 @@
 from models.portfolio import Portfolio
 
 class TraderInterface:
-    def __init__(self, simulator, cash=0, portfolio=None):
+    def __init__(self, simulator, simulation_id=None, cash=0, portfolio=None):
         self.simulator = simulator
+        self.simulation_id = simulation_id
         if portfolio:
             self.portfolio = portfolio
         else:
@@ -15,7 +16,7 @@ class TraderInterface:
     def get_name(self):
         raise NotImplementedError()
 
-    def process_day(self, current_date, dataset):
+    def process_day(self, current_date, datasets):
         raise NotImplementedError()
     
     def get_portfolio(self):

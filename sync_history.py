@@ -7,9 +7,11 @@ import time
 import threading
 
 import app_config
+from database.company import add_company_info
+from database.dividend import remove_dividend_history, insert_dividend_bulk
+from database.split import remove_split_history, insert_splits_bulk
 from database.price_history import insert_price_history_bulk, remove_price_history, get_company_ids_in_price_history
 from database.database import PriceHistory
-from database.mysql_db import MySQLDatabase
 
 class SyncHistory:
     def __init__(self, session, threads):
@@ -59,9 +61,10 @@ class SyncHistory:
                     print('Adding {}'.format(symbol))
                     if data.info.get('symbol'):
                         self.lock.acquire()
-                        company = self.database.add_company_info(data.info.get('longName'),
-                                                                 data.info.get('symbol'),
-                                                                 data.info.get('fullExchangeName'), 0, '', '') # TODO
+                        company = add_company_info(self.session, 
+                                                   data.info.get('longName'),
+                                                   data.info.get('symbol'),
+                                                   data.info.get('fullExchangeName'), 0, '', '') # TODO
                         self.session.commit()
                         self.lock.release()
                     else:
@@ -75,7 +78,7 @@ class SyncHistory:
                 print(e)
 
     def store_full_history(self, company, history):
-        data_to_store = dict(company_id=company.get('company_id'))
+        data_to_store = dict(company_id=company.company_id)
         price_history = []
         dividends = []
         splits = []
@@ -85,16 +88,16 @@ class SyncHistory:
             try:
                 if history.loc[index, 'Stock Splits']:
                     multiplier *= float(history.loc[index, 'Stock Splits'])
-                    splits.append((company.get('company_id'), index, float(history.loc[index, 'Stock Splits'])))
+                    splits.append((company.company_id, index, float(history.loc[index, 'Stock Splits'])))
                 if not math.isnan(history.loc[index, 'Close']):
-                    price_history.append(PriceHistory(company_id=company.get('company_id'), 
+                    price_history.append(PriceHistory(company_id=company.company_id, 
                                                       trade_date=index,
                                                       trade_close=round(float(history.loc[index, 'Close'] * multiplier), 2),
                                                       trade_volume=int(history.loc[index, 'Volume'])))
                 if history.loc[index, 'Dividends']:
-                    dividends.append((company.get('company_id'), index, round(float(history.loc[index, 'Dividends'] * multiplier), 3)))
+                    dividends.append((company.company_id, index, round(float(history.loc[index, 'Dividends'] * multiplier), 3)))
             except:
-                print('Error {}'.format(company['symbol']))
+                print('Error {}'.format(company.symbol))
                 print(history.loc[index])
         data_to_store['dividends'] = dividends
         data_to_store['price_history'] = price_history
@@ -118,12 +121,12 @@ class SyncHistory:
         try:
             self.lock.acquire()
             remove_price_history(self.session, company_id=data.get('company_id'))
-            self.database.remove_dividend_history(company_id=data.get('company_id'))
-            self.database.remove_split_history(company_id=data.get('company_id'))
-            self.database.insert_dividend_bulk(data['dividends'])
+            remove_dividend_history(self.session, company_id=data.get('company_id'))
+            remove_split_history(self.session, company_id=data.get('company_id'))
+            insert_dividend_bulk(self.session, data['dividends'])
             insert_price_history_bulk(self.session, data['price_history'])
-            self.database.insert_splits_bulk(data['splits'])
-            self.database.commit()
+            insert_splits_bulk(self.session, data['splits'])
+            self.session.commit()
         except Exception as e:
             print(e)
         finally:
