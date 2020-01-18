@@ -7,8 +7,8 @@ class StockHolding:
         self.transactions = []
 
 class Transaction:
-    def __init__(self, simulation_id, transaction_date, transaction_quantity, transaction_price, transaction_type, symbol):
-        self.simulation_id = simulation_id
+    def __init__(self, sim_trader_id, transaction_date, transaction_quantity, transaction_price, transaction_type, symbol):
+        self.sim_trader_id = sim_trader_id
         self.transaction_quantity = transaction_quantity
         self.transaction_date = transaction_date
         self.transaction_price = transaction_price

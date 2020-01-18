@@ -68,20 +68,29 @@ CREATE TABLE IF NOT EXISTS simulation (
     simulation_date DATE NOT NULL,
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
-    trader_id INT,
     starting_balance FLOAT NOT NULL,
     description VARCHAR(2000),
     PRIMARY KEY (simulation_id)
 );
 
+CREATE TABLE IF NOT EXISTS simulation_trader (
+    simulation_trader_id INT AUTO_INCREMENT,
+    simulation_id INT NOT NULL,
+    trader_id INT NOT NULL,
+    PRIMARY KEY (simulation_trader_id),
+    FOREIGN KEY (simulation_id) REFERENCES simulation(simulation_id),
+    FOREIGN KEY (trader_id) REFERENCES traders(trader_id),
+    UNIQUE KEY (simulation_id, trader_id)
+);
+
 CREATE TABLE IF NOT EXISTS transaction (
     transaction_id INT AUTO_INCREMENT,
-    simulation_id INT NOT NULL,
+    simulation_trader_id INT NOT NULL,
     transaction_date TIMESTAMP NOT NULL,
     transaction_price FLOAT NOT NULL,
     transaction_type VARCHAR(10) NOT NULL,
     transaction_quantity FLOAT NOT NULL,
     symbol VARCHAR(10) NOT NULL,
     PRIMARY KEY (transaction_id),
-    FOREIGN KEY (simulation_id) REFERENCES simulation(simulation_id)
+    FOREIGN KEY (simulation_trader_id) REFERENCES simulation_trader(simulation_trader_id)
 );

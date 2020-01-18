@@ -14,14 +14,14 @@ class SimpleTrader(TraderInterface):
     def get_name(self):
         return 'Simple Trader'
 
-    def process_day(self, current_date, datasets):
+    def process_day(self, current_date, datasets, simulation_trade_id):
         # TODO gets stuck in infinate loop somewhere.
         ignore = []
         for holding in self.portfolio.get_stock_holdings_list():
             if datasets.get(holding.symbol).price_history.get(current_date, {}).trade_close:
                 current_value = datasets.get(holding.symbol).price_history[current_date].trade_close * holding.quantity
                 if current_value > (holding.cost_basis * self.gain_sell_ratio) or current_value < (holding.cost_basis * self.loss_sell_ratio):
-                    self.simulator.sell(self, holding.symbol, holding.quantity)
+                    self.sell(holding.symbol, holding.quantity, simulation_trade_id)
                     ignore.append(holding.symbol)
             else:
                 print('No History for {} on {}'.format(holding.symbol, current_date))
@@ -47,7 +47,7 @@ class SimpleTrader(TraderInterface):
                             best_company = company
             if best_company:
                 quantity = max_sale // best_company.price_history[current_date].trade_close
-                self.simulator.buy(self, best_company.company.symbol, quantity)
+                self.buy(best_company.company.symbol, quantity, simulation_trade_id)
                 ignore.append(best_company.company.symbol)
                 to_buy -= 1
             else:

@@ -1,4 +1,6 @@
 import datetime
+import os
+import sys, inspect, importlib
 from time import sleep
 import time
 from sqlalchemy import create_engine
@@ -9,13 +11,15 @@ from models.dataset import DataSet
 from traders.simple_trader import SimpleTrader
 from exceptions import InsuficientFunds, NegativeQuantity
 
-from database.database import Simulation
+from database.database import Simulation, SimulationTrader
 from database.price_history import get_price_history
 from database.dividend import get_dividend_history
 from database.split import get_split_history
 from database.company import get_companies
 from database.stock import get_current_stock_list
-from database.simulation import add_transaction, add_simulation
+from database.simulation import add_transaction, add_simulation, add_simulation_trader
+from database.trader import get_traders
+from traders.interface import TraderInterface
 
 class Simulator:
     def __init__(self, session):
@@ -31,7 +35,8 @@ class Simulator:
     def setup_datasets(self):
         #company_ids = get_company_ids_in_price_history(self.session)
         start = time.time()
-        companylist = get_current_stock_list(self.session, 'SP500')
+        companylist = dict()
+        #companylist = get_current_stock_list(self.session, 'SP500')
         companylist.update(get_current_stock_list(self.session, 'DOW'))
         company_ids=[company.company_id for company in companylist.values()]
         companies = get_companies(self.session,company_ids=company_ids)
@@ -59,7 +64,10 @@ class Simulator:
                 self.datasets[company.symbol] = comp
         print('Data Load Took {:.0f}s'.format(time.time()-start))
 
-    def start(self, start_date, end_date, traders):
+    def start(self, start_date, end_date, sim_traders):
+        """
+            :param sim_trader: dict of simulation_trader_ids to traders
+        """
         self.current_date = start_date
         self.setup_datasets()
         while self.current_date < end_date:
@@ -68,13 +76,16 @@ class Simulator:
             self.todays_prices = self.get_day_prices()
             if self.todays_prices:
                 self.last_prices = self.todays_prices
-                self.process_day(traders)
+                self.process_day(sim_traders)
             self.current_date = self.current_date + datetime.timedelta(days=1)
-        for trader in traders:
+        for trader in sim_traders.values():
             trader.print_portfolio(self.last_prices)
             trader.print_profit(self.last_prices)
 
-    def process_day(self, traders):
+    def process_day(self, sim_traders):
+        """
+            :param sim_trader: dict of simulation_trader_ids to traders
+        """
         for dataset in self.datasets.values():
             price = self.price_history.get(dataset.company.company_id, {}).get(self.current_date)
             dividend = self.dividend_history.get(dataset.company.company_id, {}).get(self.current_date)
@@ -86,9 +97,9 @@ class Simulator:
                 dataset.dividend_history[self.current_date] = dividend
             if split:
                 dataset.split_history[self.current_date] = split
-        for trader in traders:
+        for sim_trader_id, trader in sim_traders.items():
             self.process_day_data(trader.get_portfolio())
-            trader.process_day(self.current_date, self.datasets)
+            trader.process_day(self.current_date, self.datasets, sim_trader_id)
             if app_config.DEBUG:
                 trader.print_portfolio(self.todays_prices)
         #sleep(1)
@@ -119,13 +130,13 @@ class Simulator:
                 prices[dataset.company.company_id] = price.trade_close
         return prices
 
-    def buy(self, trader, symbol, quantity):
+    def buy(self, trader, symbol, quantity, sim_trader_id):
         if quantity <= 0:
             raise NegativeQuantity('Quantity is negative {}'.format(quantity))
         company_id = self.datasets[symbol].company.company_id
         stock_holding = trader.portfolio.get_stock_holdings().get(symbol)
         current_price = self.price_history[company_id][self.current_date].trade_close
-        transaction = Transaction(trader.simulation_id, self.current_date, quantity, current_price, 'BUY', symbol)
+        transaction = Transaction(sim_trader_id, self.current_date, quantity, current_price, 'BUY', symbol)
         transaction_cost = current_price * quantity + app_config.TRADE_FEES
         trader.portfolio.fees += app_config.TRADE_FEES
 
@@ -136,20 +147,20 @@ class Simulator:
             stock_holding = StockHolding(company_id=company_id, symbol=symbol)
             trader.portfolio.stock_holdings[symbol] = stock_holding
         stock_holding.transactions.append(transaction)
-        add_transaction(self.session, transaction.simulation_id, transaction.transaction_date, transaction.transaction_quantity, transaction.transaction_price, transaction.transaction_type, symbol)
+        add_transaction(self.session, sim_trader_id, transaction.transaction_date, transaction.transaction_quantity, transaction.transaction_price, transaction.transaction_type, symbol)
         stock_holding.quantity += quantity
         stock_holding.cost_basis += transaction_cost
         trader.portfolio.cash -= transaction_cost
         print('Purchased {} of {} on {} for {:.2f}'.format(quantity, symbol, self.current_date, transaction_cost))
     
-    def sell(self, trader, symbol, quantity):
+    def sell(self, trader, symbol, quantity, sim_trader_id):
         stock_holding = trader.portfolio.get_stock_holdings().get(symbol)
         current_price = self.price_history[stock_holding.company_id][self.current_date].trade_close
-        transaction = Transaction(trader.simulation_id, self.current_date, -quantity, current_price, 'SELL', symbol)
+        transaction = Transaction(sim_trader_id, self.current_date, -quantity, current_price, 'SELL', symbol)
         transaction_value = current_price * quantity - app_config.TRADE_FEES
         trader.portfolio.fees += app_config.TRADE_FEES
         stock_holding.transactions.append(transaction)
-        add_transaction(self.session, transaction.simulation_id, transaction.transaction_date, transaction.transaction_quantity, transaction.transaction_price, transaction.transaction_type, symbol)
+        add_transaction(self.session, sim_trader_id, transaction.transaction_date, transaction.transaction_quantity, transaction.transaction_price, transaction.transaction_type, symbol)
         stock_holding.quantity -= quantity
         trader.portfolio.cash += transaction_value
         # TODO how to handle short term taxes
@@ -159,6 +170,36 @@ class Simulator:
             trader.portfolio.previous_holdings.append(stock_holding)
             del trader.portfolio.stock_holdings[symbol]
         print('Sold {} of {} on {} for {:.2f}'.format(quantity, symbol, self.current_date, transaction_value))
+
+    def initiate_traders(self, trader_data, starting_cash=0):
+        """
+            :param trader_data: Dictionary of trader_ids to trader data params
+        """
+        traders = get_traders(self.session, trader_ids=trader_data.keys()) #TODO multiple traders support
+        trader_instances = []
+        for trader in traders:
+            if trader.location[:7] == 'file://':
+                path = 'traders.{}'.format(trader.location[7:-3])
+                importlib.import_module(path)
+                trader_module = self.get_class(path)
+                for name, obj in inspect.getmembers(trader_module):
+                    if inspect.isclass(obj):
+                        if obj != TraderInterface:
+                            for mro in inspect.getmro(obj):
+                                if mro == TraderInterface:
+                                    print('Adding {}'.format(name))
+                                    trader = obj(self, trader_id=trader.trader_id, cash=trader_data[trader.trader_id].get('starting_cash', starting_cash))
+                                    trader.setup(trader_data[trader.trader_id])
+                                    trader_instances.append(trader)
+        return trader_instances
+
+    def get_class(self, kls ):
+        parts = kls.split('.')
+        module = ".".join(parts[:-1])
+        m = __import__( module )
+        for comp in parts[1:]:
+            m = getattr(m, comp)
+        return m
 
 def main():
     # TODO starting values configurable
@@ -172,15 +213,20 @@ def main():
     engine.connect()
     Session = sessionmaker(bind=engine)
     session = Session()
-    traders = []
     #TODO load all traders.  Auto vs config?
     simulator = Simulator(session=session)
-    simple_trader = SimpleTrader(simulator, starting_balance)
-    simple_trader.setup(params=dict(max_holding=30, loss_sell_ratio=0.5, gain_sell_ratio=2.0, minimum_transaction=2000))
-    simulation = add_simulation(session, start_date, end_date, starting_balance, datetime.datetime.now(), None, 'Temp Description')
-    simple_trader.simulation_id = simulation.simulation_id
-    traders.append(simple_trader)
-    simulator.start(start_date, end_date, traders)
+    traders = simulator.initiate_traders(
+        {4: dict(starting_cash=starting_balance, max_holding=30, loss_sell_ratio=0.5, gain_sell_ratio=2.0, minimum_transaction=2000),
+         2: dict(starting_cash=10000)})
+
+    simulation = add_simulation(session, start_date, end_date, starting_balance, datetime.datetime.now(), 'Temp Description')
+    sim_traders = dict()
+    session.commit()
+    for trader in traders:
+        sim_trader = add_simulation_trader(session, simulation.simulation_id, trader.trader_id)
+        session.commit()
+        sim_traders[sim_trader.simulation_trader_id] = trader
+    simulator.start(start_date, end_date, sim_traders)
     session.commit()
     session.close()
 

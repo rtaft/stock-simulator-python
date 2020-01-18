@@ -60,7 +60,7 @@ class SimulationHandler (restful.Resource):
             Session = sessionmaker(bind=engine)
             session = Session()
 
-            traders = get_traders(session, trader_ids=[data['trader_id']])
+            traders = get_traders(session, trader_ids=[data['trader_id']]) #TODO multiple traders support
             trader_instances = []
             sim = simulator.Simulator(session=session)
             for trader in traders:
@@ -78,7 +78,7 @@ class SimulationHandler (restful.Resource):
                                         trader.setup(data['params'])
                                         trader_instances.append(trader)
             print(data)
-            sim.start(data['start_date'], data['end_date'], trader_instances)
+            sim.start(data['start_date'], data['end_date'], trader_instances, data['simulation_id'])
             # TODO store simulation results
             # TODO store current progress
             # TODO return results through get call

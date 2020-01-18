@@ -97,15 +97,7 @@ stock_sim/
 
 # Rope project settings
 .ropeproject
-
-# mkdocs documentation
 /site
-
-# mypy
-.mypy_cache/
-
-# VSCode
-.vscode/
 
 # other
 tmp/
@@ -115,4 +107,4 @@ temp/
 app_config.py
 stocks.db
 package-lock.json
-database/database.py
+.vscode

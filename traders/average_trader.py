@@ -11,7 +11,7 @@ class AverageTrader(TraderInterface):
     def get_name(self):
         return 'Average Trader'
 
-    def process_day(self, current_date, datasets):
+    def process_day(self, current_date, datasets, simulation_trade_id):
         # TODO gets stuck in infinate loop somewhere.
 
         # check state of existing stock holdings
@@ -22,7 +22,7 @@ class AverageTrader(TraderInterface):
                 current_value = datasets.get(holding.symbol).price_history[current_date].trade_close * holding.quantity
                 #print('{} vs {}'.format(current_value, holding.cost_basis))
                 if current_value > (holding.cost_basis * 1.5) or current_value < (holding.cost_basis * 0.8):
-                    self.simulator.sell(self, holding.symbol, holding.quantity)
+                    self.sell(holding.symbol, holding.quantity, simulation_trade_id)
                     ignore.append(holding.symbol)
             else:
                 print('No History for {} on {}'.format(holding.symbol, current_date))
@@ -37,7 +37,7 @@ class AverageTrader(TraderInterface):
             best_company = None
             max_sale = (self.portfolio.cash - app_config.TRADE_FEES) / to_buy
             
-            for symbol, company in dataset.items():
+            for symbol, company in datasets.items():
                 if company.price_history.get(current_date, {}).get('trade_close', 0) > 1 and \
                    company.price_history.get(current_date, {}).get('trade_close', 0) < max_sale and \
                    len(company.price_history) > 50 and \
@@ -54,7 +54,7 @@ class AverageTrader(TraderInterface):
                 #if best_company.symbol == 'FLUX':
                 #    print(best_company.price_history)
                 quantity = max_sale // best_company.price_history[current_date]['trade_close']
-                self.simulator.buy(self, best_company.symbol, quantity)
+                self.buy(best_company.symbol, quantity, simulation_trade_id)
                 ignore.append(best_company.symbol)
                 to_buy -= 1
             else:

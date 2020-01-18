@@ -27,10 +27,10 @@ class Simulation(Base):
     simulation_date = Column(Date, nullable=False)
     start_date = Column(Date, nullable=False)
     end_date = Column(Date, nullable=False)
-    trader_id = Column(INTEGER(11))
     starting_balance = Column(Float, nullable=False)
     description = Column(String(2000))
 
+    simulation_traders = relationship('SimulationTrader')
 
 class StockList(Base):
     __tablename__ = 'stock_list'
@@ -73,6 +73,20 @@ class PriceHistory(Base):
     company = relationship('Company')
 
 
+class SimulationTrader(Base):
+    __tablename__ = 'simulation_trader'
+    __table_args__ = (
+        Index('simulation_id', 'simulation_id', 'trader_id', unique=True),
+    )
+
+    simulation_trader_id = Column(INTEGER(11), primary_key=True)
+    simulation_id = Column(ForeignKey('simulation.simulation_id'), nullable=False)
+    trader_id = Column(ForeignKey('traders.trader_id'), nullable=False, index=True)
+
+    simulation = relationship('Simulation')
+    trader = relationship('Trader')
+
+
 class SplitHistory(Base):
     __tablename__ = 'split_history'
 
@@ -101,11 +115,11 @@ class Transaction(Base):
     __tablename__ = 'transaction'
 
     transaction_id = Column(INTEGER(11), primary_key=True)
-    simulation_id = Column(ForeignKey('simulation.simulation_id'), nullable=False, index=True)
+    simulation_trader_id = Column(ForeignKey('simulation_trader.simulation_trader_id'), nullable=False, index=True)
     transaction_date = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
     transaction_price = Column(Float, nullable=False)
     transaction_type = Column(String(10), nullable=False)
     transaction_quantity = Column(Float, nullable=False)
     symbol = Column(String(10), nullable=False)
 
-    simulation = relationship('Simulation')
+    simulation_trader = relationship('SimulationTrader')
