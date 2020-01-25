@@ -20,4 +20,6 @@
     <input type="date" id="endDate" [(ngModel)]="tradeEndDate" />
 </div>
 
-<button (click)="runSimulation()">Run Simulation</button>
+<button (click)="runSimulation()" [disabled]="running">Run Simulation</button>
+<br>
+<label>Status:</label> {{status}}

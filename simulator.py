@@ -3,6 +3,8 @@ import os
 import sys, inspect, importlib
 from time import sleep
 import time
+import memcache
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import app_config
@@ -31,13 +33,14 @@ class Simulator:
         self.datasets = {}
         self.last_prices = None
         self.todays_prices = None
+        self.mem = memcache.Client([(app_config.MEMCACHE_HOST, app_config.MEMCACHE_PORT)])
 
     def setup_datasets(self):
         #company_ids = get_company_ids_in_price_history(self.session)
         start = time.time()
         companylist = dict()
-        #companylist = get_current_stock_list(self.session, 'SP500')
-        companylist.update(get_current_stock_list(self.session, 'DOW'))
+        companylist = get_current_stock_list(self.session, 'SP500')
+        #companylist.update(get_current_stock_list(self.session, 'DOW'))
         company_ids=[company.company_id for company in companylist.values()]
         companies = get_companies(self.session,company_ids=company_ids)
         self.price_history = get_price_history(self.session,company_ids=company_ids)
@@ -64,13 +67,15 @@ class Simulator:
                 self.datasets[company.symbol] = comp
         print('Data Load Took {:.0f}s'.format(time.time()-start))
 
-    def start(self, start_date, end_date, sim_traders):
+    def start(self, start_date, end_date, sim_traders, simulation_id):
         """
             :param sim_trader: dict of simulation_trader_ids to traders
         """
         self.current_date = start_date
+        self.mem.set('progress_{}'.format(simulation_id), 'Loading...')
         self.setup_datasets()
         while self.current_date < end_date:
+            self.mem.set('progress_{}'.format(simulation_id), self.current_date)
             if app_config.DEBUG:
                 print ('Process Day {}'.format(self.current_date))
             self.todays_prices = self.get_day_prices()
@@ -78,6 +83,7 @@ class Simulator:
                 self.last_prices = self.todays_prices
                 self.process_day(sim_traders)
             self.current_date = self.current_date + datetime.timedelta(days=1)
+        self.mem.set('progress_{}'.format(simulation_id), 'Completed.')
         for trader in sim_traders.values():
             trader.print_portfolio(self.last_prices)
             trader.print_profit(self.last_prices)
@@ -226,7 +232,7 @@ def main():
         sim_trader = add_simulation_trader(session, simulation.simulation_id, trader.trader_id)
         session.commit()
         sim_traders[sim_trader.simulation_trader_id] = trader
-    simulator.start(start_date, end_date, sim_traders)
+    simulator.start(start_date, end_date, sim_traders, simulation.simulation_id)
     session.commit()
     session.close()
 

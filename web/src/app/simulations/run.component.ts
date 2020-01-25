@@ -4,6 +4,7 @@ import { Trader } from '../models/trader';
 
 import { TraderService } from '../services/traders';
 import { SimulationService } from '../services/simulations';
+import { Simulation, SimulationStatus } from '../models/simulation';
 
 @Component({
   selector: 'app-run',
@@ -12,10 +13,12 @@ import { SimulationService } from '../services/simulations';
 })
 export class RunComponent implements OnInit {
   traders: Trader[] = []
-  selectedTrader: String = '0';
+  selectedTrader: string = '0';
   tradeStartDate: Date;
   tradeEndDate: Date;
-  simulationId: Number;
+  simulationId: number;
+  running = false;
+  status: string = 'Not Started'
   
   constructor(private traderService: TraderService, private simulationService: SimulationService) { }
 
@@ -28,6 +31,29 @@ export class RunComponent implements OnInit {
   }
 
   runSimulation() {
-    this.simulationService.runSimulation(this.selectedTrader, this.tradeStartDate, this.tradeEndDate).toPromise().then( result => this.simulationId = result);
+    if (this.selectedTrader != null && this.tradeStartDate != null && this.tradeEndDate != null && this.tradeStartDate < this.tradeEndDate) {
+      this.running = true;
+      this.simulationService.runSimulation(this.selectedTrader, this.tradeStartDate, this.tradeEndDate).
+          toPromise().then( result => this.setSimulationId(result)).catch(result => this.running = false);
+    }
+  }
+
+  setSimulationId(simId) {
+    this.simulationId = simId;
+    this.pollStatus();
+  }
+
+  pollStatus() {
+    this.simulationService.getSimulationStatus(this.simulationId).toPromise().then(result => this.updateStatus(result));
+  }
+
+  updateStatus(status:SimulationStatus) {
+    this.status = status.status;
+    if (this.status === 'Completed.') {
+      this.running = false;
+      // TODO redirect to results
+    } else {
+      setTimeout(() => {this.pollStatus()}, 1000)
+    }
   }
 }
