@@ -24,13 +24,12 @@ class Simulation(Base):
     __tablename__ = 'simulation'
 
     simulation_id = Column(INTEGER(11), primary_key=True)
-    simulation_date = Column(Date, nullable=False)
+    simulation_date = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
     start_date = Column(Date, nullable=False)
     end_date = Column(Date, nullable=False)
     starting_balance = Column(Float, nullable=False)
     description = Column(String(2000))
 
-    simulation_traders = relationship('SimulationTrader')
 
 class StockList(Base):
     __tablename__ = 'stock_list'

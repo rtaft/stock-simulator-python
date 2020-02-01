@@ -16,3 +16,13 @@ def add_transaction(session, sim_trader_id, transaction_date, transaction_quanti
     trans = Transaction(simulation_trader_id=sim_trader_id, transaction_date=transaction_date, transaction_quantity=transaction_quantity, transaction_price=transaction_price, transaction_type=transaction_type, symbol=symbol)
     session.add(trans)
     return trans
+
+def get_simulations(session, index=None, length=None):
+    query = session.query(Simulation).order_by(Simulation.simulation_id.desc())
+
+    if index:
+        query = query.offset(index*length)
+    if length:
+        query = query.limit(length)
+
+    return query.all()

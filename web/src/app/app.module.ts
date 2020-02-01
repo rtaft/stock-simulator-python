@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { MDBBootstrapModule } from 'angular-bootstrap-md';
+import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 
 import { MenuComponent } from './base/menu.component';
 import { DashboardComponent } from './base/dashboard.component';
@@ -39,7 +40,8 @@ import { SimulationService } from './services/simulations';
     AppRoutingModule,
     FormsModule,
     HttpClientModule,
-    MDBBootstrapModule.forRoot()
+    MDBBootstrapModule.forRoot(),
+    NgxDatatableModule
   ],
   providers: [
     SimulationService,

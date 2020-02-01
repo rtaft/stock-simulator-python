@@ -19,7 +19,7 @@ import app_config
 from simulator import Simulator
 from traders.interface import TraderInterface
 from database.trader import get_traders
-from database.simulation import add_simulation, add_simulation_trader
+from database.simulation import add_simulation, add_simulation_trader, get_simulations
 
 EXECUTOR = ThreadPoolExecutor(2)
 
@@ -27,20 +27,19 @@ class SimulationRunSchema(Schema):
     trader_id = fields.Integer(required=True)
     start_date = fields.Date(required=True)
     end_date = fields.Date(required=True)
-    # TODO starting cash
+    starting_cash = fields.Int(required=True)
+    description = fields.String(default="None Specified")
     # TODO params
     # TODO datasets
 
 @API.route('/simulation', methods=['GET', 'POST'])
 class SimulationHandler (restful.Resource):
     def get(self):
-        pass
+        return success(get_simulations(DB))
 
     def post(self):
         data = request.get_json(force=True)
         valid_data = SimulationRunSchema().load(data)
-        valid_data['starting_cash'] = 10000 #TODO
-        valid_data['description'] = 'Temp Description' #TODO
         valid_data['params'] = {}
         valid_data['simulation'] = add_simulation(DB,
                                                   valid_data['start_date'], 

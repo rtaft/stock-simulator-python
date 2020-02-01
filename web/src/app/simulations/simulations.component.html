@@ -1,1 +1,25 @@
-<p>simulations works!</p>
+<h4>Simulations</h4>
+
+<!--table>
+    <tr *ngFor="let simulation of simulations">
+        <td>{{ simulation.simulation_id }}</td>
+        <td>{{ simulation.simulation_date }}</td>
+        <td>{{ simulation.description }}</td>
+        <td>{{ simulation.starting_cash }}</td>
+        <td>{{ simulation.start_date }}</td>
+        <td>{{ simulation.end_date }}</td>
+    </tr>
+</table-->
+<div class="simtable">
+<ngx-datatable
+        class="bootstrap dtable"
+        [rows]="simulations"
+        [loadingIndicator]="loadingIndicator"
+        [columns]="columns"
+        [headerHeight]="40"
+        [footerHeight]="50"
+        [limit]="10"
+        rowHeight="auto"
+      >
+      </ngx-datatable>
+</div>

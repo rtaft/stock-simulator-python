@@ -65,7 +65,7 @@ CREATE TABLE IF NOT EXISTS traders (
 
 CREATE TABLE IF NOT EXISTS simulation (
     simulation_id INT AUTO_INCREMENT,
-    simulation_date DATE NOT NULL,
+    simulation_date TIMESTAMP NOT NULL,
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
     starting_balance FLOAT NOT NULL,

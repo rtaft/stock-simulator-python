@@ -16,6 +16,8 @@ export class RunComponent implements OnInit {
   selectedTrader: string = '0';
   tradeStartDate: Date;
   tradeEndDate: Date;
+  startingCash: number = 10000;
+  description: string;
   simulationId: number;
   running = false;
   status: string = 'Not Started'
@@ -33,7 +35,7 @@ export class RunComponent implements OnInit {
   runSimulation() {
     if (this.selectedTrader != null && this.tradeStartDate != null && this.tradeEndDate != null && this.tradeStartDate < this.tradeEndDate) {
       this.running = true;
-      this.simulationService.runSimulation(this.selectedTrader, this.tradeStartDate, this.tradeEndDate).
+      this.simulationService.runSimulation(this.selectedTrader, this.tradeStartDate, this.tradeEndDate, this.startingCash, this.description).
           toPromise().then( result => this.setSimulationId(result)).catch(result => this.running = false);
     }
   }

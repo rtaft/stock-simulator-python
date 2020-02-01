@@ -8,8 +8,9 @@ import { Simulation, SimulationStatus } from '../models/simulation';
 export class SimulationService {
     constructor(private httpClient: HttpClient) {}
 
-    runSimulation(trader_id: string, start_date: Date, end_date: Date): Observable<number> {
-        return this.httpClient.post<number>('/api/simulation', {trader_id: trader_id, start_date: start_date, end_date: end_date});
+    runSimulation(trader_id: string, start_date: Date, end_date: Date, starting_cash: number, description: string): Observable<number> {
+        return this.httpClient.post<number>('/api/simulation', {trader_id: trader_id, start_date: start_date, end_date: end_date, 
+                                                                starting_cash: starting_cash, description: description});
     } 
 
     getSimulationStatus(simulation_id: number): Observable<SimulationStatus> {
@@ -17,7 +18,10 @@ export class SimulationService {
     }
 
     getSimulation(simulation_id: number): Observable<Simulation> {
-        return this.httpClient.get<number>('/api/simulation/' + simulation_id);
+        return this.httpClient.get<Simulation>('/api/simulation/' + simulation_id);
     }
 
+    getSimulations(index: number, length: number): Observable<Simulation[]> {
+        return this.httpClient.get<Simulation[]>('/api/simulation');
+    }
 }
