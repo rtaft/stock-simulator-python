@@ -98,7 +98,7 @@ stock_sim/
 # Rope project settings
 .ropeproject
 /site
-
+ 
 # other
 tmp/
 temp/

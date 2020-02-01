@@ -7,11 +7,11 @@ import time
 import threading
 
 import app_config
-from database.company import add_company_info
+from database.company import add_company_info, get_companies
 from database.dividend import remove_dividend_history, insert_dividend_bulk
 from database.split import remove_split_history, insert_splits_bulk
 from database.price_history import insert_price_history_bulk, remove_price_history, get_company_ids_in_price_history
-from database.database import PriceHistory
+from database.database import PriceHistory, DividendHistory, SplitHistory
 
 class SyncHistory:
     def __init__(self, session, threads):
@@ -84,21 +84,23 @@ class SyncHistory:
         splits = []
         history.iloc[::-1]
         multiplier = 1
+        # print('STORE {}'.format(company.symbol))
         for index in reversed(history.index):
             try:
                 if history.loc[index, 'Stock Splits']:
                     multiplier *= float(history.loc[index, 'Stock Splits'])
-                    splits.append((company.company_id, index, float(history.loc[index, 'Stock Splits'])))
+                    splits.append(SplitHistory(company_id=company.company_id, split_date=index, ratio=float(history.loc[index, 'Stock Splits'])))
                 if not math.isnan(history.loc[index, 'Close']):
                     price_history.append(PriceHistory(company_id=company.company_id, 
                                                       trade_date=index,
                                                       trade_close=round(float(history.loc[index, 'Close'] * multiplier), 2),
                                                       trade_volume=int(history.loc[index, 'Volume'])))
                 if history.loc[index, 'Dividends']:
-                    dividends.append((company.company_id, index, round(float(history.loc[index, 'Dividends'] * multiplier), 3)))
+                    dividends.append(DividendHistory(company_id=company.company_id, ex_date=index, dividend=round(float(history.loc[index, 'Dividends'] * multiplier), 3)))
             except:
                 print('Error {}'.format(company.symbol))
                 print(history.loc[index])
+        print('STORE {} {}'.format(company.symbol, len(dividends)))
         data_to_store['dividends'] = dividends
         data_to_store['price_history'] = price_history
         data_to_store['splits'] = splits
@@ -106,7 +108,7 @@ class SyncHistory:
 
     def process_data_store(self):
         saved = 0
-        while self.running:
+        while self.running or self.data_to_process:
             if self.data_to_process:
                 data = self.data_to_process.pop()
                 self.store_data(data)
@@ -123,10 +125,16 @@ class SyncHistory:
             remove_price_history(self.session, company_id=data.get('company_id'))
             remove_dividend_history(self.session, company_id=data.get('company_id'))
             remove_split_history(self.session, company_id=data.get('company_id'))
-            insert_dividend_bulk(self.session, data['dividends'])
-            insert_price_history_bulk(self.session, data['price_history'])
-            insert_splits_bulk(self.session, data['splits'])
-            self.session.commit()
+            if data['dividends']:
+                insert_dividend_bulk(self.session, data['dividends'])
+                self.session.commit()
+            if data['price_history']:
+                insert_price_history_bulk(self.session, data['price_history'])
+                self.session.commit()
+            if data['splits']:
+                insert_splits_bulk(self.session, data['splits'])
+                self.session.commit()
+                
         except Exception as e:
             print(e)
         finally:
@@ -140,7 +148,7 @@ if __name__ == "__main__":
     sync_history = SyncHistory(session, 10)
     #companies = database.get_current_stock_list('SP500').values()
     #companies = database.get_current_stock_list('DOW')
-    companies_by_exchange = database.get_companies()
+    companies_by_exchange = get_companies(session)
     companies = dict()
     for exchange, company_dict in companies_by_exchange.items():
         companies.update(company_dict)
@@ -150,7 +158,7 @@ if __name__ == "__main__":
     #for symbol, company in companies.items():
     #for exchange, company_list in companies.items():
     for symbol, company in companies.items():
-        if '.WS' not in symbol and '.WT' not in symbol and '.U' not in symbol and company['company_id'] not in ignore_company_ids:
+        if '.WS' not in symbol and '.WT' not in symbol and '.U' not in symbol and company.company_id not in ignore_company_ids:
             symbol = symbol.replace('.', '-')
             symbol = symbol.replace('^', '-P')
             symbol = symbol.replace('-CL', 'CL')
