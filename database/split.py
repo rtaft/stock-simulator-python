@@ -5,7 +5,9 @@ def remove_split_history(session, company_id):
     return session.query(SplitHistory).filter(SplitHistory.company_id == company_id).delete()
 
 def insert_splits_bulk(session, split_history_list):
-    session.add_all(split_history_list)
+    #session.add_all(split_history_list)
+    session.execute(SplitHistory.__table__.insert(), split_history_list)
+
 
 def insert_split(session, company_id, split_date, ratio):
     session.add(SplitHistory(company_id=company_id, split_date=split_date, ratio=ratio))

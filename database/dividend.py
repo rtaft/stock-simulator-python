@@ -8,7 +8,8 @@ def insert_dividend(session, company_id, dividend_date, dividend):
     session.add(DividendHistory(company_id=company_id, dividend_date=dividend_date, dividend=dividend))
 
 def insert_dividend_bulk(session, dividend_history_list):
-    session.add_all(dividend_history_list)
+#    session.add_all(dividend_history_list)
+    session.execute(DividendHistory.__table__.insert(), dividend_history_list)
 
 def get_dividend_history(session, company_ids=None, start_date=None, end_date=None):
     where = []

@@ -8,8 +8,9 @@ def insert_price_history(session, company_id, trade_date, trade_close, trade_vol
     session.add(PriceHistory(company_id=company_id, trade_date=trade_date, trade_close=trade_close, trade_volume=trade_volume))
 
 def insert_price_history_bulk(session, price_history_list):
-    session.add_all(price_history_list)
-
+    #session.add_all(price_history_list)
+    session.execute(PriceHistory.__table__.insert(), price_history_list)
+    
 def get_price_history(session, company_ids=None, start_date=None, end_date=None):
     where = []
     if company_ids:

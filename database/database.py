@@ -1,5 +1,5 @@
 # coding: utf-8
-from sqlalchemy import Column, Date, Float, ForeignKey, Index, String, TIMESTAMP, text
+from sqlalchemy import CHAR, Column, Date, Float, ForeignKey, Index, String, TIMESTAMP, text
 from sqlalchemy.dialects.mysql import INTEGER
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
@@ -18,13 +18,14 @@ class Company(Base):
     ipo = Column(INTEGER(11))
     sector = Column(String(60))
     industry = Column(String(255))
+    error = Column(CHAR(1))
 
 
 class Simulation(Base):
     __tablename__ = 'simulation'
 
     simulation_id = Column(INTEGER(11), primary_key=True)
-    simulation_date = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
+    simulation_date = Column(Date, nullable=False)
     start_date = Column(Date, nullable=False)
     end_date = Column(Date, nullable=False)
     starting_balance = Column(Float, nullable=False)
@@ -100,11 +101,11 @@ class SplitHistory(Base):
 class StockListDatum(Base):
     __tablename__ = 'stock_list_data'
 
+    data_id = Column(INTEGER(11), primary_key=True)
     company_id = Column(ForeignKey('company.company_id'), nullable=False, index=True)
     list_id = Column(ForeignKey('stock_list.list_id'), nullable=False, index=True)
     date_added = Column(Date)
     date_removed = Column(Date)
-    data_id = Column(INTEGER(11), primary_key=True)
 
     company = relationship('Company')
     list = relationship('StockList')
