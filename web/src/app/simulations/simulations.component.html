@@ -1,25 +1,55 @@
 <h4>Simulations</h4>
 
-<!--table>
-    <tr *ngFor="let simulation of simulations">
-        <td>{{ simulation.simulation_id }}</td>
-        <td>{{ simulation.simulation_date }}</td>
-        <td>{{ simulation.description }}</td>
-        <td>{{ simulation.starting_cash }}</td>
-        <td>{{ simulation.start_date }}</td>
-        <td>{{ simulation.end_date }}</td>
-    </tr>
-</table-->
 <div class="simtable">
-<ngx-datatable
+    <ngx-datatable
         class="bootstrap dtable"
+        [columnMode]="'flex'"
         [rows]="simulations"
         [loadingIndicator]="loadingIndicator"
-        [columns]="columns"
         [headerHeight]="40"
         [footerHeight]="50"
         [limit]="10"
         rowHeight="auto"
       >
-      </ngx-datatable>
+      <ngx-datatable-column name="Sim#" [flexGrow]="1">
+        <ng-template let-row="row" ngx-datatable-cell-template>
+          {{ row['simulation_id'] }}
+        </ng-template>
+      </ngx-datatable-column>
+      <ngx-datatable-column name="Run Date" [flexGrow]="2">
+        <ng-template let-row="row" ngx-datatable-cell-template>
+          {{ row['simulation_date'] | date: 'yyyy-MM-dd &nbsp;HH:mm:ss' }}
+        </ng-template>
+      </ngx-datatable-column>
+      <ngx-datatable-column name="Trader" [flexGrow]="2">
+        <ng-template let-row="row" ngx-datatable-cell-template>
+          {{ row['name'] }}
+        </ng-template>
+      </ngx-datatable-column>
+      <ngx-datatable-column name="Description" [flexGrow]="5">
+        <ng-template let-row="row" ngx-datatable-cell-template>
+          {{ row['description'] }}
+        </ng-template>
+      </ngx-datatable-column>
+      <ngx-datatable-column name="Start Date" [flexGrow]="2">
+        <ng-template let-row="row" ngx-datatable-cell-template>
+          {{ row['start_date'] }}
+        </ng-template>
+      </ngx-datatable-column>
+      <ngx-datatable-column name="End Date" [flexGrow]="2">
+        <ng-template let-row="row" ngx-datatable-cell-template>
+          {{ row['end_date'] }}
+        </ng-template>
+      </ngx-datatable-column>
+      <ngx-datatable-column name="Starting Cash" [flexGrow]="2">
+        <ng-template let-row="row" ngx-datatable-cell-template>
+          ${{ row['starting_balance'] }}
+        </ng-template>
+      </ngx-datatable-column>
+      <ngx-datatable-column name="Ending Cash" [flexGrow]="2">
+        <ng-template let-row="row" ngx-datatable-cell-template>
+          ${{ row['ending_value'] }}
+        </ng-template>
+      </ngx-datatable-column>
+    </ngx-datatable>
 </div>

@@ -17,7 +17,7 @@ API = Api(APP)
 
 
 def connect():
-    engine = create_engine('{}://{}:{}@localhost/{}'.format(app_config.DB_TYPE, app_config.DB_USER, app_config.DB_PASS, app_config.DB_NAME))
+    engine = create_engine('{}://{}:{}@{}/{}'.format(app_config.DB_TYPE, app_config.DB_USER, app_config.DB_PASS, app_config.DB_HOST, app_config.DB_NAME))
     engine.connect()
     Session = sessionmaker(bind=engine)
     return Session()

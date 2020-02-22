@@ -56,7 +56,7 @@ class SimulationHandler (restful.Resource):
 
     def run_simulation(self, data):
         try:
-            engine = create_engine('{}://{}:{}@localhost/{}'.format(app_config.DB_TYPE, app_config.DB_USER, app_config.DB_PASS, app_config.DB_NAME))
+            engine = create_engine('{}://{}:{}@{}/{}'.format(app_config.DB_TYPE, app_config.DB_USER, app_config.DB_PASS, app_config.DB_HOST, app_config.DB_NAME))
             engine.connect()
             Session = sessionmaker(bind=engine)
             session = Session()
@@ -72,7 +72,7 @@ class SimulationHandler (restful.Resource):
             for trader in traders:
                 sim_trader = add_simulation_trader(session, data['simulation'].simulation_id, trader.trader_id)
                 session.commit()
-                sim_traders[sim_trader.simulation_trader_id] = trader
+                sim_traders[sim_trader] = trader
             simulator.start(data['start_date'], data['end_date'], sim_traders, data['simulation'].simulation_id)
 
             # TODO return results through get call

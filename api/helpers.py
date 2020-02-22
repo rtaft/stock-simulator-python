@@ -94,8 +94,8 @@ def success(body=None):
         del obj['_sa_instance_state']
         return make_json_response(200, obj)
 
-    if isinstance(body, (list)):
-        if len(body) > 0:
+    if isinstance(body, list):
+        if body:
             if isinstance(body[0], (Base)):
                 data = []
                 for item in body:

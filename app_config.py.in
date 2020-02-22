@@ -2,6 +2,7 @@ DB_TYPE='<mysql|sqlite>'
 DB_NAME='<stocks|stocks.db>'
 DB_USER='<mysql_username>'
 DB_PASS='<mysql_pass>'
+DB_HOST='<mysql_host>'
 
 DEBUG = False
 TRADE_FEES = 0

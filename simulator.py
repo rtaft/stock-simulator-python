@@ -69,7 +69,7 @@ class Simulator:
 
     def start(self, start_date, end_date, sim_traders, simulation_id):
         """
-            :param sim_trader: dict of simulation_trader_ids to traders
+            :param sim_traders: dict of simulation_traders to traders
         """
         self.current_date = start_date
         self.mem.set('progress_{}'.format(simulation_id), 'Loading...')
@@ -84,13 +84,15 @@ class Simulator:
                 self.process_day(sim_traders)
             self.current_date = self.current_date + datetime.timedelta(days=1)
         self.mem.set('progress_{}'.format(simulation_id), 'Completed.')
-        for trader in sim_traders.values():
+        for sim_trader, trader in sim_traders.items():
             trader.print_portfolio(self.last_prices)
             trader.print_profit(self.last_prices)
+            sim_trader.ending_value = trader.portfolio.get_portfolio_value(self.last_prices)
+
 
     def process_day(self, sim_traders):
         """
-            :param sim_trader: dict of simulation_trader_ids to traders
+            :param sim_traders: dict of simulation_traders to traders
         """
         for dataset in self.datasets.values():
             price = self.price_history.get(dataset.company.company_id, {}).get(self.current_date)
@@ -103,9 +105,9 @@ class Simulator:
                 dataset.dividend_history[self.current_date] = dividend
             if split:
                 dataset.split_history[self.current_date] = split
-        for sim_trader_id, trader in sim_traders.items():
+        for sim_trader, trader in sim_traders.items():
             self.process_day_data(trader.get_portfolio())
-            trader.process_day(self.current_date, self.datasets, sim_trader_id)
+            trader.process_day(self.current_date, self.datasets, sim_trader.simulation_trader_id)
             if app_config.DEBUG:
                 trader.print_portfolio(self.todays_prices)
         #sleep(1)
@@ -215,7 +217,7 @@ def main():
     start_date = datetime.date(2016, 1, 1)
     end_date = datetime.date(2017, 1, 1)
     starting_balance = 60000
-    engine = create_engine('{}://{}:{}@localhost/{}'.format(app_config.DB_TYPE, app_config.DB_USER, app_config.DB_PASS, app_config.DB_NAME))
+    engine = create_engine('{}://{}:{}@{}/{}'.format(app_config.DB_TYPE, app_config.DB_USER, app_config.DB_PASS, app_config.DB_HOST, app_config.DB_NAME))
     engine.connect()
     Session = sessionmaker(bind=engine)
     session = Session()
@@ -231,8 +233,9 @@ def main():
     for trader in traders:
         sim_trader = add_simulation_trader(session, simulation.simulation_id, trader.trader_id)
         session.commit()
-        sim_traders[sim_trader.simulation_trader_id] = trader
+        sim_traders[sim_trader] = trader
     simulator.start(start_date, end_date, sim_traders, simulation.simulation_id)
+    
     session.commit()
     session.close()
 
