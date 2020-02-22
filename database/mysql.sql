@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS company (
     ipo INT,
     sector VARCHAR(60),
     industry VARCHAR(255),
+    error CHAR(1) default null;
     PRIMARY KEY(company_id)
 );
 

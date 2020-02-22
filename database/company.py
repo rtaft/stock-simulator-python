@@ -1,6 +1,5 @@
 from sqlalchemy import between, and_, distinct
 from database.database import Company
-import traceback
 
 def add_company_info(session, company_name, symbol, exchange, ipo, sector, industry):
     company = Company(company_name=company_name, symbol=symbol, exchange=exchange, ipo=ipo, sector=sector, industry=industry)
