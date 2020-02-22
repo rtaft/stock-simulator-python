@@ -88,6 +88,7 @@ class Simulator:
             trader.print_portfolio(self.last_prices)
             trader.print_profit(self.last_prices)
             sim_trader.ending_value = trader.portfolio.get_portfolio_value(self.last_prices)
+        self.session.commit()
 
 
     def process_day(self, sim_traders):
