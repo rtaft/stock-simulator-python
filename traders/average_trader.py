@@ -42,8 +42,8 @@ class AverageTrader(TraderInterface):
                    company.price_history.get(current_date, {}).get('trade_close', 0) < max_sale and \
                    len(company.price_history) > 50 and \
                    symbol not in ignore:
-                    sma20 = get_simple_moving_average(company.price_history, 20, 1)[0]
-                    sma50 = get_simple_moving_average(company.price_history, 50, 1)[0]
+                    sma20 = get_simple_moving_average(company.price_history, company.company_id, 20, 1)[0]
+                    sma50 = get_simple_moving_average(company.price_history, company.company_id, 50, 1)[0]
                     if sma20 and sma50:
                         slope = (sma50 - sma20) / sma20
                         if slope > best_slope:

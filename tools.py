@@ -1,8 +1,9 @@
 import math
 import numpy
 
-def get_simple_moving_average(company_price_history, period, days):
-    dates = list(company_price_history.keys())[-1 * (days + period):]
+def get_simple_moving_average(price_history, company_id, period, days):
+    company_price_history = price_history.get_last_n_days(company_id, period + days)
+    dates = sorted(list(company_price_history.keys()))
     values = [company_price_history[trade_date].trade_close for trade_date in dates]
     moving_average = []
     for i in range(1, period+1):
@@ -10,10 +11,11 @@ def get_simple_moving_average(company_price_history, period, days):
     return moving_average
 
 
-def bollinger_bands(company_price_history, period, days=20, stdv=2):
-    dates = list(company_price_history.keys())[-1 * (period + days):]
+def bollinger_bands(price_history, company_id, period, days=20, stdv=2):
+    company_price_history = price_history.get_last_n_days(company_id, period + days)
+    dates = sorted(list(company_price_history.keys()))
     values = [company_price_history[trade_date].trade_close for trade_date in dates]
-    sma = get_simple_moving_average(company_price_history, period + days, days)
+    sma = get_simple_moving_average(price_history, company_id, period + days, days)
     
     bands = []
     for i in range(days, days + period):

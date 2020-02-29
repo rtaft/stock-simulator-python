@@ -13,9 +13,8 @@ class AppleBuyer(TraderInterface):
     def process_day(self, current_date, datasets, simulation_trade_id):
         apple = datasets.get('AAPL')
         if apple:
-            #tools.get_moving_average(apple.price_history, 60, 30)
-            tools.bollinger_bands(apple.price_history, 60, 20)
-            if current_date in apple.price_history and (self.portfolio.cash - app_config.TRADE_FEES) > apple.price_history[current_date].trade_close:
-                quantity = (self.portfolio.cash - app_config.TRADE_FEES) // apple.price_history[current_date].trade_close
+            current_price = apple.get_current_price()
+            if current_price and (self.portfolio.cash - app_config.TRADE_FEES) > current_price.trade_close:
+                quantity = (self.portfolio.cash - app_config.TRADE_FEES) // current_price.trade_close
                 self.buy('AAPL', quantity, simulation_trade_id)
         

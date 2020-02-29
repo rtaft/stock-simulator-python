@@ -15,7 +15,8 @@ def get_price_history(session, company_ids=None, start_date=None, end_date=None)
     where = []
     if company_ids:
         where.append(PriceHistory.company_id.in_(company_ids))
-    elif start_date and end_date:
+    
+    if start_date and end_date:
         where.append(between(PriceHistory.trade_date, start_date, end_date))
 
     query = session.query(PriceHistory)

@@ -22,11 +22,11 @@ from database.stock import get_current_stock_list
 from database.simulation import add_transaction, add_simulation, add_simulation_trader
 from database.trader import get_traders
 from traders.interface import TraderInterface
+import price_history_manager
 
 class Simulator:
     def __init__(self, session):
         self.session = session
-        self.price_history = dict()
         self.dividend_history = dict()
         self.split_history = dict()
         self.current_date = None
@@ -34,28 +34,22 @@ class Simulator:
         self.last_prices = None
         self.todays_prices = None
         self.mem = memcache.Client([(app_config.MEMCACHE_HOST, app_config.MEMCACHE_PORT)])
-
+        self.history = price_history_manager.PriceHistoryManager(session=session)
+        self.company_ids = []
+    
     def setup_datasets(self):
         #company_ids = get_company_ids_in_price_history(self.session)
         start = time.time()
         companylist = dict()
         companylist = get_current_stock_list(self.session, 'SP500')
         #companylist.update(get_current_stock_list(self.session, 'DOW'))
-        company_ids=[company.company_id for company in companylist.values()]
-        companies = get_companies(self.session,company_ids=company_ids)
-        self.price_history = get_price_history(self.session,company_ids=company_ids)
-        self.dividend_history = get_dividend_history(self.session,company_ids=company_ids)
-        self.split_history = get_split_history(self.session,company_ids=company_ids)
+        self.company_ids=[company.company_id for company in companylist.values()]
+        companies = get_companies(self.session,company_ids=self.company_ids)
+        self.dividend_history = get_dividend_history(self.session,company_ids=self.company_ids)
+        self.split_history = get_split_history(self.session,company_ids=self.company_ids)
         for exchange in companies:
             for company in companies[exchange].values():
-                comp = DataSet(company=company)
-                if company.company_id in self.price_history:
-                    for trade_date, price in self.price_history.get(company.company_id).items():
-                        if trade_date <= self.current_date:
-                            comp.price_history[trade_date] = price
-                else:
-                    print('Could not find price history for {}'.format(company.symbol))
-                    continue
+                comp = DataSet(company=company, price_history=self.history)
                 if company.company_id in self.dividend_history:
                     for trade_date, dividend in self.dividend_history.get(company.company_id).items():
                         if trade_date <= self.current_date:
@@ -75,6 +69,8 @@ class Simulator:
         self.mem.set('progress_{}'.format(simulation_id), 'Loading...')
         self.setup_datasets()
         while self.current_date < end_date:
+            print(self.current_date)
+            self.history.set_current_date(self.current_date)
             self.mem.set('progress_{}'.format(simulation_id), self.current_date)
             if app_config.DEBUG:
                 print ('Process Day {}'.format(self.current_date))
@@ -96,12 +92,9 @@ class Simulator:
             :param sim_traders: dict of simulation_traders to traders
         """
         for dataset in self.datasets.values():
-            price = self.price_history.get(dataset.company.company_id, {}).get(self.current_date)
             dividend = self.dividend_history.get(dataset.company.company_id, {}).get(self.current_date)
             split = self.split_history.get(dataset.company.company_id, {}).get(self.current_date)
 
-            if price:
-                dataset.price_history[self.current_date] = price
             if dividend:
                 dataset.dividend_history[self.current_date] = dividend
             if split:
@@ -115,8 +108,9 @@ class Simulator:
 
     def process_day_data(self, portfolio):
         for stock in portfolio.stock_holdings.values():
-            if self.current_date in self.price_history[stock.company_id]:
-                stock.current_price = self.price_history[stock.company_id][self.current_date].trade_close
+            current_price_history = self.history.get_current_price(stock.company_id)
+            if current_price_history:
+                stock.current_price = current_price_history.trade_close
             dividend = self.dividend_history.get(stock.company_id, {}).get(self.current_date)
             if dividend:
                 if app_config.DEBUG:
@@ -133,8 +127,9 @@ class Simulator:
 
     def get_day_prices(self):
         prices = dict()
+        days_prices = self.history.get_days_prices(company_ids=self.company_ids)
         for dataset in self.datasets.values():
-            price = self.price_history.get(dataset.company.company_id, {}).get(self.current_date)
+            price = days_prices.get(dataset.company.company_id, {}).get(self.current_date)
             if price:
                 prices[dataset.company.company_id] = price.trade_close
         return prices
@@ -144,7 +139,7 @@ class Simulator:
             raise NegativeQuantity('Quantity is negative {}'.format(quantity))
         company_id = self.datasets[symbol].company.company_id
         stock_holding = trader.portfolio.get_stock_holdings().get(symbol)
-        current_price = self.price_history[company_id][self.current_date].trade_close
+        current_price = self.history.get_current_price(company_id).trade_close
         transaction = Transaction(sim_trader_id, self.current_date, quantity, current_price, 'BUY', symbol)
         transaction_cost = current_price * quantity + app_config.TRADE_FEES
         trader.portfolio.fees += app_config.TRADE_FEES
@@ -163,8 +158,9 @@ class Simulator:
         print('Purchased {} of {} on {} for {:.2f}'.format(quantity, symbol, self.current_date, transaction_cost))
     
     def sell(self, trader, symbol, quantity, sim_trader_id):
+        company_id = self.datasets[symbol].company.company_id
         stock_holding = trader.portfolio.get_stock_holdings().get(symbol)
-        current_price = self.price_history[stock_holding.company_id][self.current_date].trade_close
+        current_price = self.history.get_current_price(company_id).trade_close
         transaction = Transaction(sim_trader_id, self.current_date, -quantity, current_price, 'SELL', symbol)
         transaction_value = current_price * quantity - app_config.TRADE_FEES
         trader.portfolio.fees += app_config.TRADE_FEES
@@ -215,6 +211,7 @@ def main():
     #cash = float(input("Enter Starting Cash Balance:"))
     #start_date = input("Enter Starting Date:")
     #end_date = input("Enter End Date:")
+    start = time.time()
     start_date = datetime.date(2016, 1, 1)
     end_date = datetime.date(2017, 1, 1)
     starting_balance = 60000
@@ -225,7 +222,7 @@ def main():
     #TODO load all traders.  Auto vs config?
     simulator = Simulator(session=session)
     traders = simulator.initiate_traders(
-        {4: dict(starting_cash=starting_balance, max_holding=30, loss_sell_ratio=0.5, gain_sell_ratio=2.0, minimum_transaction=2000),
+        {1: dict(starting_cash=starting_balance, max_holding=30, loss_sell_ratio=0.5, gain_sell_ratio=2.0, minimum_transaction=2000),
          2: dict(starting_cash=10000)})
 
     simulation = add_simulation(session, start_date, end_date, starting_balance, datetime.datetime.now(), 'Temp Description')
@@ -239,6 +236,8 @@ def main():
     
     session.commit()
     session.close()
+    print('Simulation Took {:.0f}s'.format(time.time()-start))
+    print()
 
 if __name__ == "__main__":
     main()
