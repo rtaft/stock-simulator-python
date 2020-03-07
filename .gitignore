@@ -107,4 +107,5 @@ temp/
 app_config.py
 stocks.db
 package-lock.json
+web/package-lock.json
 .vscode

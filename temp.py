@@ -1,4 +1,4 @@
-from database.database import Company, Trader, SplitHistory, PriceHistory, StockList, StockListDatum
+from database.database import Company, Trader, SplitHistory, StockList, StockListDatum
 from sqlalchemy import create_engine, and_, distinct
 from sqlalchemy.orm import sessionmaker
 import datetime

@@ -70,7 +70,6 @@ class Simulator:
         self.mem.set('progress_{}'.format(simulation_id), 'Loading...')
         self.setup_datasets()
         while self.current_date < end_date:
-            print(self.current_date)
             self.history.set_current_date(self.current_date)
             self.mem.set('progress_{}'.format(simulation_id), self.current_date)
             if app_config.DEBUG:

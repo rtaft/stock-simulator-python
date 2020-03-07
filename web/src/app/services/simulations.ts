@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-import { Simulation, SimulationStatus } from '../models/simulation';
+import { Simulation, SimulationStatus, SimulationTrader, Transaction } from '../models/simulation';
 
 @Injectable()
 export class SimulationService {
@@ -17,11 +17,15 @@ export class SimulationService {
         return this.httpClient.get<SimulationStatus>('/api/simulation/' + simulation_id + '/status');
     }
 
-    getSimulation(simulation_id: number): Observable<Simulation> {
-        return this.httpClient.get<Simulation>('/api/simulation/' + simulation_id);
+    getSimulation(simulation_id: number): Observable<SimulationTrader[]> {
+        return this.httpClient.get<SimulationTrader[]>('/api/simulation/' + simulation_id);
     }
 
     getSimulations(index: number, length: number): Observable<Simulation[]> {
         return this.httpClient.get<Simulation[]>('/api/simulation');
+    }
+
+    getTransactions(sim_trader_id: number): Observable<Transaction[]> {
+        return this.httpClient.get<Transaction[]>('/api/transaction/' + sim_trader_id);
     }
 }

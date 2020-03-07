@@ -19,7 +19,7 @@ import app_config
 from simulator import Simulator
 from traders.interface import TraderInterface
 from database.trader import get_traders
-from database.simulation import add_simulation, add_simulation_trader, get_simulations
+from database.simulation import add_simulation, add_simulation_trader, get_simulations, get_simulation_traders, get_transactions
 
 EXECUTOR = ThreadPoolExecutor(2)
 
@@ -98,3 +98,8 @@ class SimulationStatusHandler (restful.Resource):
         if progress:
             return success(dict(status=progress))
         raise NotFound()
+
+@API.route('/simulation/<int:simulation_id>', methods=['GET'])
+class SimulationResultsHandler (restful.Resource):
+    def get(self, simulation_id):
+        return success(get_simulation_traders(DB, simulation_id=simulation_id))

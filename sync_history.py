@@ -13,7 +13,7 @@ from database.company import add_company_info, get_companies, get_companies_by_i
 from database.dividend import remove_dividend_history, insert_dividend_bulk
 from database.split import remove_split_history, insert_splits_bulk
 from database.price_history import insert_price_history_bulk, remove_price_history, get_company_ids_in_price_history
-from database.database import PriceHistory, DividendHistory, SplitHistory
+from database.database import DividendHistory, SplitHistory
 from database.stock import get_current_stock_list
 
 class SyncHistory:

@@ -3,14 +3,11 @@ from database.database import t_price_history
 
 def remove_price_history(session, company_id):
     return session.execute(t_price_history.delete().where(t_price_history.c.company_id == company_id))
-#    return session.query(PriceHistory).filter(PriceHistory.company_id == company_id).delete()
 
 def insert_price_history(session, company_id, trade_date, trade_close, trade_volume):
-#    session.add(PriceHistory(company_id=company_id, trade_date=trade_date, trade_close=trade_close, trade_volume=trade_volume))
     session.execute(t_price_history.insert().values(company_id=company_id, trade_date=trade_date, trade_close=trade_close, trade_volume=trade_volume))
     
 def insert_price_history_bulk(session, price_history_list):
-    #session.add_all(price_history_list)
     session.execute(t_price_history.insert(), price_history_list)
     
 def get_price_history(session, company_ids=None, start_date=None, end_date=None):
