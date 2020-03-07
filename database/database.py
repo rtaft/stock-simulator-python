@@ -1,5 +1,5 @@
 # coding: utf-8
-from sqlalchemy import CHAR, Column, Date, Float, ForeignKey, Index, String, TIMESTAMP, text
+from sqlalchemy import CHAR, Column, Date, Float, ForeignKey, Index, String, TIMESTAMP, Table, text
 from sqlalchemy.dialects.mysql import INTEGER
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
@@ -19,6 +19,15 @@ class Company(Base):
     sector = Column(String(60))
     industry = Column(String(255))
     error = Column(CHAR(1))
+
+
+t_price_history = Table(
+    'price_history', metadata,
+    Column('company_id', INTEGER(11), nullable=False),
+    Column('trade_date', Date, nullable=False, index=True),
+    Column('trade_close', Float, nullable=False),
+    Column('trade_volume', INTEGER(11), nullable=False)
+)
 
 
 class Simulation(Base):
@@ -54,21 +63,6 @@ class DividendHistory(Base):
     company_id = Column(ForeignKey('company.company_id'), nullable=False, index=True)
     ex_date = Column(Date)
     dividend = Column(Float, nullable=False)
-
-    company = relationship('Company')
-
-
-class PriceHistory(Base):
-    __tablename__ = 'price_history'
-    __table_args__ = (
-        Index('company_id', 'company_id', 'trade_date', unique=True),
-    )
-
-    history_id = Column(INTEGER(11), primary_key=True)
-    company_id = Column(ForeignKey('company.company_id'), nullable=False)
-    trade_date = Column(Date, nullable=False)
-    trade_close = Column(Float, nullable=False)
-    trade_volume = Column(INTEGER(11), nullable=False)
 
     company = relationship('Company')
 

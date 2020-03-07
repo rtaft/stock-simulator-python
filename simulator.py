@@ -43,8 +43,9 @@ class Simulator:
         companylist = dict()
         companylist = get_current_stock_list(self.session, 'SP500')
         #companylist.update(get_current_stock_list(self.session, 'DOW'))
-        self.company_ids=[company.company_id for company in companylist.values()]
-        companies = get_companies(self.session,company_ids=self.company_ids)
+        #self.company_ids=[company.company_id for company in companylist.values()]
+        #companies = get_companies(self.session,company_ids=self.company_ids)
+        companies = get_companies(self.session)
         self.dividend_history = get_dividend_history(self.session,company_ids=self.company_ids)
         self.split_history = get_split_history(self.session,company_ids=self.company_ids)
         for exchange in companies:
@@ -222,8 +223,8 @@ def main():
     #TODO load all traders.  Auto vs config?
     simulator = Simulator(session=session)
     traders = simulator.initiate_traders(
-        {1: dict(starting_cash=starting_balance, max_holding=30, loss_sell_ratio=0.5, gain_sell_ratio=2.0, minimum_transaction=2000),
-         2: dict(starting_cash=10000)})
+        #{1: dict(starting_cash=starting_balance, max_holding=30, loss_sell_ratio=0.5, gain_sell_ratio=2.0, minimum_transaction=2000),
+         {2: dict(starting_cash=10000)})
 
     simulation = add_simulation(session, start_date, end_date, starting_balance, datetime.datetime.now(), 'Temp Description')
     sim_traders = dict()
