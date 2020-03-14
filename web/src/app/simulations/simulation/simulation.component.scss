@@ -5,4 +5,42 @@
     left: 0;
     right: 0;
   }
-  
+
+.panel {
+  height: 100%;
+  width: 100%;
+}
+
+.left-panel {
+  display: inline-grid;
+  width: 10%;
+}
+
+.right-panel {
+  display: inline-grid;
+  margin-left: 15px;
+  width: 85%;
+}
+
+.menu {
+  list-style: none;
+  padding-inline-start: 0em;
+  margin-block-start: 0em;
+  margin-block-end: 0em;
+  margin-inline-start: 0px;
+  margin-inline-end: 0px;
+
+}
+
+.menu-item {
+  border-bottom: 1px solid #4caf50;
+  border-left: 3px solid transparent;
+}
+
+.menu-item:hover {
+  border-left: 3px solid #4caf50;
+}
+
+.selected-menu-item {
+  background-color: #4caf4f20;
+}

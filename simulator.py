@@ -43,9 +43,9 @@ class Simulator:
         companylist = dict()
         companylist = get_current_stock_list(self.session, 'SP500')
         #companylist.update(get_current_stock_list(self.session, 'DOW'))
-        #self.company_ids=[company.company_id for company in companylist.values()]
-        #companies = get_companies(self.session,company_ids=self.company_ids)
-        companies = get_companies(self.session)
+        self.company_ids=[company.company_id for company in companylist.values()]
+        companies = get_companies(self.session,company_ids=self.company_ids)
+        #companies = get_companies(self.session)
         self.dividend_history = get_dividend_history(self.session,company_ids=self.company_ids)
         self.split_history = get_split_history(self.session,company_ids=self.company_ids)
         for exchange in companies:
@@ -60,6 +60,7 @@ class Simulator:
                         if trade_date <= self.current_date:
                             comp.split_history[trade_date] = split
                 self.datasets[company.symbol] = comp
+        self.history.initial_load(current_date=self.current_date)
         print('Data Load Took {:.0f}s'.format(time.time()-start))
 
     def start(self, start_date, end_date, sim_traders, simulation_id):
@@ -104,6 +105,7 @@ class Simulator:
             trader.process_day(self.current_date, self.datasets, sim_trader.simulation_trader_id)
             if app_config.DEBUG:
                 trader.print_portfolio(self.todays_prices)
+
         #sleep(1)
 
     def process_day_data(self, portfolio):
@@ -126,13 +128,17 @@ class Simulator:
                 stock.quantity *= split.ratio
 
     def get_day_prices(self):
-        prices = dict()
-        days_prices = self.history.get_days_prices(company_ids=self.company_ids)
-        for dataset in self.datasets.values():
-            price = days_prices.get(dataset.company.company_id, {}).get(self.current_date)
-            if price:
-                prices[dataset.company.company_id] = price.trade_close
-        return prices
+        try:
+            prices = dict()
+            days_prices = self.history.get_days_prices(company_ids=self.company_ids)
+            for dataset in self.datasets.values():
+                price = days_prices.get(dataset.company.company_id, {}).get(self.current_date)
+                if price:
+                    prices[dataset.company.company_id] = price.trade_close
+            return prices
+        except:
+            import traceback
+            traceback.print_exc()
 
     def buy(self, trader, symbol, quantity, sim_trader_id):
         if quantity <= 0:

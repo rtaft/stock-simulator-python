@@ -11,6 +11,19 @@ class PriceHistoryManager():
         self.last_days_load = None
         self.history = dict() # company_id : dict ( key, value )   prices=dict ( date : price ), start_loaded_date, end_loaded_date
 
+    def initial_load(self, past_days=200, current_date=None):
+        if current_date:
+            self.current_date = current_date
+        self.last_days_load = self.current_date + datetime.timedelta(days=self.load_size)
+        start_date = self.current_date - datetime.timedelta(days=past_days)
+        data = get_price_history_from_db(self.session, start_date=start_date, end_date=self.last_days_load)
+        for company_id, price_data in data.items():
+            company_history = self.history.setdefault(company_id, dict())
+            # TODO individual start and end load dates
+            company_history.setdefault('prices', dict()).update(price_data)
+            company_history['start_loaded_date'] = start_date
+            company_history['end_loaded_date'] = self.last_days_load
+
     def set_current_date(self, current_date):
         if self.current_date and current_date < self.current_date:
             raise Exception('Cannot set a past date.')
@@ -44,7 +57,7 @@ class PriceHistoryManager():
                 company_history.setdefault('prices', dict()).update(price_data)
         
         for company_id, company_data in self.history.items():
-            if self.current_date in company_data['prices']:
+            if 'prices' in company_data and self.current_date in company_data['prices']:
                 todays_prices[company_id] = {self.current_date: company_data['prices'][self.current_date]}
         return todays_prices
 
@@ -77,6 +90,7 @@ class PriceHistoryManager():
             load_data_end = end_date + datetime.timedelta(days=self.load_size)
         
         if load_data_start:
+            print('Query {} {} {}'.format(company_id, load_data_start, load_data_end))
             loaded_data = get_price_history_from_db(session=self.session, company_ids=[company_id], start_date=load_data_start, end_date=load_data_end)
             if company_id in loaded_data:
                 company_history.setdefault('prices', dict()).update(loaded_data[company_id])

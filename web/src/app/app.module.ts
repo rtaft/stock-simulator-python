@@ -21,6 +21,7 @@ import { SearchComponent } from './data/search.component';
 /* Services */
 import { TraderService } from './services/traders';
 import { SimulationService } from './services/simulations';
+import { ResultsComponent } from './simulations/simulation/results.component';
 
 
 @NgModule({
@@ -36,6 +37,7 @@ import { SimulationService } from './services/simulations';
     AddComponent,
     SearchComponent,
     SimulationComponent,
+    ResultsComponent,
   ],
   imports: [
     BrowserModule,

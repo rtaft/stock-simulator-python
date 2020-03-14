@@ -1,1 +1,12 @@
-<p>simulation works!</p>
+
+<div class="panel">
+    <nav class="left-panel">
+        <ul class="menu">
+            <li [ngClass]="getClass(-1)" (click)="select(-1)">Summary</li>
+            <li [ngClass]="getClass(trader.simulation_trader_id)" *ngFor="let trader of simulationTraders" (click)="select(trader.simulation_trader_id)">{{ trader.name }}</li>
+        </ul>
+    </nav>
+    <div class="right-panel">
+        <app-simulation-results *ngIf="selected != -1" [simulationTrader]="selectedTrader" [transactions]="selectedTransactions"></app-simulation-results>
+    </div>
+</div>

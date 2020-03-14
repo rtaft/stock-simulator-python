@@ -1,0 +1,55 @@
+<h3>{{ simulationTrader.name }}</h3>
+
+<div class="simtable">
+    <ngx-datatable
+        class="bootstrap dtable"
+        [columnMode]="'flex'"
+        [rows]="transactions"
+        [loadingIndicator]="loadingIndicator"
+        [headerHeight]="40"
+        [footerHeight]="50"
+        [limit]="100"
+        rowHeight="auto"
+      >
+      <ngx-datatable-column name="#" [flexGrow]="1">
+        <ng-template let-row="row" ngx-datatable-cell-template>
+          {{ row['transaction_id'] }}
+        </ng-template>
+      </ngx-datatable-column>
+      <ngx-datatable-column name="Trade Date" [flexGrow]="2">
+        <ng-template let-row="row" ngx-datatable-cell-template>
+          {{ row['transaction_date'] | date: 'yyyy-MM-dd' }}
+        </ng-template>
+      </ngx-datatable-column>
+      <ngx-datatable-column name="Type" [flexGrow]="2">
+        <ng-template let-row="row" ngx-datatable-cell-template>
+          {{ row['transaction_type'] }}
+        </ng-template>
+      </ngx-datatable-column>
+      <ngx-datatable-column name="Symbol" [flexGrow]="2">
+        <ng-template let-row="row" ngx-datatable-cell-template>
+          {{ row['symbol'] }}
+        </ng-template>
+      </ngx-datatable-column>
+      <ngx-datatable-column name="Qty" [flexGrow]="2">
+        <ng-template let-row="row" ngx-datatable-cell-template>
+          {{ row['transaction_quantity'] }}
+        </ng-template>
+      </ngx-datatable-column>
+      <ngx-datatable-column name="Price" [flexGrow]="2">
+        <ng-template let-row="row" ngx-datatable-cell-template>
+          ${{ row['transaction_price'] }}
+        </ng-template>
+      </ngx-datatable-column>
+      <ngx-datatable-column name="Total" [flexGrow]="2">
+        <ng-template let-row="row" ngx-datatable-cell-template>
+          ${{ row['transaction_quantity'] * row['transaction_price'] }}
+        </ng-template>
+      </ngx-datatable-column>
+      <ngx-datatable-column name="Cash Balance" [flexGrow]="2">
+        <ng-template let-row="row" ngx-datatable-cell-template>
+          $0
+        </ng-template>
+      </ngx-datatable-column>
+    </ngx-datatable>
+</div>
