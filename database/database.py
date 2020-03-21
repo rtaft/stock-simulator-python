@@ -67,6 +67,21 @@ class DividendHistory(Base):
     company = relationship('Company')
 
 
+class PriceHistoryOld(Base):
+    __tablename__ = 'price_history_old'
+    __table_args__ = (
+        Index('company_id', 'company_id', 'trade_date', unique=True),
+    )
+
+    history_id = Column(INTEGER(11), primary_key=True)
+    company_id = Column(ForeignKey('company.company_id'), nullable=False)
+    trade_date = Column(Date, nullable=False, index=True)
+    trade_close = Column(Float, nullable=False)
+    trade_volume = Column(INTEGER(11), nullable=False)
+
+    company = relationship('Company')
+
+
 class SimulationTrader(Base):
     __tablename__ = 'simulation_trader'
     __table_args__ = (
@@ -116,5 +131,6 @@ class Transaction(Base):
     transaction_type = Column(String(10), nullable=False)
     transaction_quantity = Column(Float, nullable=False)
     symbol = Column(String(10), nullable=False)
+    transaction_total = Column(Float)
 
     simulation_trader = relationship('SimulationTrader')

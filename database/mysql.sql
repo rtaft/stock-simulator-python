@@ -125,6 +125,7 @@ CREATE TABLE IF NOT EXISTS transaction (
     transaction_price FLOAT NOT NULL,
     transaction_type VARCHAR(10) NOT NULL,
     transaction_quantity FLOAT NOT NULL,
+    transaction_total FLOAT NOT NULL,
     symbol VARCHAR(10) NOT NULL,
     PRIMARY KEY (transaction_id),
     FOREIGN KEY (simulation_trader_id) REFERENCES simulation_trader(simulation_trader_id)

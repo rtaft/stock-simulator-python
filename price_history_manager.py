@@ -4,11 +4,13 @@ from database.price_history import get_price_history as get_price_history_from_d
 
 class PriceHistoryManager():
 
-    def __init__(self, session, load_size=90):
+    def __init__(self, session, company_ids=None, load_size=92):
         self.session = session
         self.current_date = None
         self.load_size = load_size
         self.last_days_load = None
+        self.start_date = None
+        self.company_ids = company_ids
         self.history = dict() # company_id : dict ( key, value )   prices=dict ( date : price ), start_loaded_date, end_loaded_date
 
     def initial_load(self, past_days=200, current_date=None):
@@ -16,13 +18,12 @@ class PriceHistoryManager():
             self.current_date = current_date
         self.last_days_load = self.current_date + datetime.timedelta(days=self.load_size)
         start_date = self.current_date - datetime.timedelta(days=past_days)
-        data = get_price_history_from_db(self.session, start_date=start_date, end_date=self.last_days_load)
+        data = get_price_history_from_db(self.session, company_ids=self.company_ids, start_date=start_date, end_date=self.last_days_load)
+        self.start_date = start_date
+        self.end_date = self.last_days_load
         for company_id, price_data in data.items():
             company_history = self.history.setdefault(company_id, dict())
-            # TODO individual start and end load dates
             company_history.setdefault('prices', dict()).update(price_data)
-            company_history['start_loaded_date'] = start_date
-            company_history['end_loaded_date'] = self.last_days_load
 
     def set_current_date(self, current_date):
         if self.current_date and current_date < self.current_date:
@@ -53,7 +54,6 @@ class PriceHistoryManager():
             data = get_price_history_from_db(self.session, company_ids=company_ids, start_date=self.current_date, end_date=self.last_days_load)
             for company_id, price_data in data.items():
                 company_history = self.history.setdefault(company_id, dict())
-                # TODO individual start and end load dates
                 company_history.setdefault('prices', dict()).update(price_data)
         
         for company_id, company_data in self.history.items():
@@ -67,41 +67,41 @@ class PriceHistoryManager():
         if start_date > end_date:
             raise Exception('Start date is greater than end date')
         
-        company_history = self.history.setdefault(company_id, dict())
-
-        
         load_data_start = None
         load_data_end = None
 
-        if 'start_loaded_date' not in company_history or (start_date < company_history['start_loaded_date'] and end_date > company_history['end_loaded_date']):
+        if start_date < self.start_date and end_date > self.last_days_load:
             load_data_start = start_date
             load_data_end = end_date + datetime.timedelta(days=self.load_size)
-        elif company_history['start_loaded_date'] < start_date < company_history['end_loaded_date'] and end_date > company_history['end_loaded_date']:
-            load_data_start = company_history['end_loaded_date']
+        elif self.start_date < start_date < self.last_days_load and end_date > self.last_days_load:
+            load_data_start = self.last_days_load
             load_data_end = end_date + datetime.timedelta(days=self.load_size)
-        elif start_date < company_history['start_loaded_date'] and company_history['start_loaded_date'] < end_date < company_history['end_loaded_date']:
+        elif start_date < self.start_date and self.start_date < end_date < self.last_days_load:
             load_data_start = start_date
-            load_data_end = company_history['start_loaded_date']
-        elif end_date < company_history['start_loaded_date']:
+            load_data_end = self.start_date
+        elif end_date < self.start_date:
             load_data_start = start_date
-            load_data_end = company_history['start_loaded_date']
-        elif start_date > company_history['end_loaded_date']:
-            load_data_start = company_history['end_loaded_date']
+            load_data_end = self.start_date
+        elif start_date > self.last_days_load:
+            load_data_start = self.last_days_load
             load_data_end = end_date + datetime.timedelta(days=self.load_size)
         
         if load_data_start:
-            print('Query {} {} {}'.format(company_id, load_data_start, load_data_end))
-            loaded_data = get_price_history_from_db(session=self.session, company_ids=[company_id], start_date=load_data_start, end_date=load_data_end)
-            if company_id in loaded_data:
-                company_history.setdefault('prices', dict()).update(loaded_data[company_id])
-                company_history['start_loaded_date'] = min(company_history.get('start_loaded_date', load_data_start), load_data_start)
-                company_history['end_loaded_date'] = max(company_history.get('end_loaded_date', load_data_end), load_data_end)
-            else:
-                return dict()
-        temp_history = dict()
-        temp_date = start_date
-        while temp_date <= end_date:
-            if temp_date in company_history['prices']:
-                temp_history[temp_date] = company_history['prices'][temp_date]
-            temp_date = temp_date + datetime.timedelta(days=1)
-        return temp_history
+            #print('Query {} {} {}'.format(company_id, load_data_start, load_data_end))
+            loaded_data = get_price_history_from_db(session=self.session, company_ids=self.company_ids, start_date=load_data_start, end_date=load_data_end)
+            for loaded_company_id in loaded_data:
+                company_history = self.history.setdefault(loaded_company_id, dict())
+                company_history.setdefault('prices', dict()).update(loaded_data[loaded_company_id])
+            self.start_date = min(self.start_date, load_data_start)
+            self.last_days_load = max(self.last_days_load, load_data_end)
+        
+        company_history = self.history.get(company_id)
+        if company_history:
+            temp_history = dict()
+            temp_date = start_date
+            while temp_date <= end_date:
+                if temp_date in company_history['prices']:
+                    temp_history[temp_date] = company_history['prices'][temp_date]
+                temp_date = temp_date + datetime.timedelta(days=1)
+            return temp_history
+        return dict()

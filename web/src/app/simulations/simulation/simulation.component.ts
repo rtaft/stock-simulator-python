@@ -17,7 +17,7 @@ export class SimulationComponent implements OnInit {
   private simulationTraders: SimulationTrader[];
   private selected = -1;
   private selectedTrader: SimulationTrader;
-  private transactions: Transaction[];
+  private transactions: Transaction[] = [];
   private selectedTransactions: Transaction[];
 
   constructor(private route: ActivatedRoute,
@@ -30,7 +30,7 @@ export class SimulationComponent implements OnInit {
       this.simulationService.getSimulation(this.simulation_id).toPromise().then(result => {
         this.simulationTraders = result;
         for (let simTrader of this.simulationTraders) {
-          this.simulationService.getTransactions(simTrader.simulation_trader_id).toPromise().then(result => this.transactions = result);
+          this.simulationService.getTransactions(simTrader.simulation_trader_id).toPromise().then(result => this.transactions = this.transactions.concat(result));
         }
       });
     });
@@ -44,6 +44,11 @@ export class SimulationComponent implements OnInit {
     this.selected = simulation_trader_id;
     this.selectedTrader = this.simulationTraders.find( simTrader => simTrader.simulation_trader_id == simulation_trader_id);
     this.selectedTransactions = this.transactions.filter( transaction => transaction.simulation_trader_id == simulation_trader_id);
+    let cash = this.selectedTrader.starting_balance;
+    for (const transaction of this.selectedTransactions) {
+      cash += transaction.transaction_total;
+      transaction.balance = cash;
+    }
   }
 
   getClass(simulation_trader_id: number) {

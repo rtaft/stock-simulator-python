@@ -32,5 +32,7 @@ export class Transaction {
     transaction_price: number;
     transaction_type: string;
     transaction_quantity: number;
+    transaction_total: number;
     symbol: string;
+    balance: number;
 }

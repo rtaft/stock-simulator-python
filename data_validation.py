@@ -3,16 +3,18 @@ from sqlalchemy.orm import sessionmaker
 
 import app_config
 from database.price_history import get_price_history
-
+from database.split import get_split_history
+from database.company import get_companies_by_id
 def main():
-    engine = create_engine('{}://{}:{}@localhost/{}'.format(app_config.DB_TYPE, app_config.DB_USER, app_config.DB_PASS, app_config.DB_NAME))
+    engine = create_engine('{}://{}:{}@{}/{}'.format(app_config.DB_TYPE, app_config.DB_USER, app_config.DB_PASS, app_config.DB_HOST, app_config.DB_NAME))
     engine.connect()
     Session = sessionmaker(bind=engine)
     session = Session()
-    companies = database.get_companies_by_id()
+    companies = get_companies_by_id(session)
     for company_id, company in companies.items():
+        print('Checking {}'.format(company.symbol))
         price_history = get_price_history(session, company_ids=[company_id])
-        split_history = database.get_split_history()
+        split_history = get_split_history(session)
         if price_history:
             history = price_history[company_id]
             last_value = -1

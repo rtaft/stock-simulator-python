@@ -27,6 +27,7 @@ class SimpleTrader(TraderInterface):
                 else:
                     print('No History for {} on {}'.format(holding.symbol, current_date))
             to_buy = self.max_holdings - len(self.portfolio.stock_holdings)
+            # TODO Rank the stocks, loop once, then pick.
             while to_buy and self.portfolio.cash > self.minimum_transaction:
                 best_slope = 0
                 best_company = None

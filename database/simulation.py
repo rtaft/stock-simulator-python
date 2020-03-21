@@ -12,8 +12,10 @@ def add_simulation_trader(session, simulation_id, trader_id):
     session.add(sim_trader)
     return sim_trader
 
-def add_transaction(session, sim_trader_id, transaction_date, transaction_quantity, transaction_price, transaction_type, symbol):
-    trans = Transaction(simulation_trader_id=sim_trader_id, transaction_date=transaction_date, transaction_quantity=transaction_quantity, transaction_price=transaction_price, transaction_type=transaction_type, symbol=symbol)
+def add_transaction(session, sim_trader_id, transaction_date, transaction_quantity, transaction_price, 
+                    transaction_type, transaction_total, symbol):
+    trans = Transaction(simulation_trader_id=sim_trader_id, transaction_date=transaction_date, transaction_quantity=transaction_quantity, 
+                        transaction_price=transaction_price, transaction_type=transaction_type, transaction_total=transaction_total, symbol=symbol)
     session.add(trans)
     return trans
 
