@@ -10,6 +10,7 @@ def get_companies(session, company_ids=None):
     query = session.query(Company)
     if company_ids:
         query = query.filter(Company.company_id.in_(company_ids))
+    query = query.filter(Company.error == None)
     companies = dict()
 
     for company in query.all():
@@ -21,6 +22,7 @@ def get_companies_by_id(session, company_ids=None):
     query = session.query(Company)
     if company_ids:
         query = query.filter(Company.company_id.in_(company_ids))
+    query = query.filter(Company.error == None)
     companies = dict()
 
     for company in query.all():

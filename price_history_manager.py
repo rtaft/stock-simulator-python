@@ -25,6 +25,11 @@ class PriceHistoryManager():
             company_history = self.history.setdefault(company_id, dict())
             company_history.setdefault('prices', dict()).update(price_data)
 
+    def clear(self): 
+        self.history = dict()
+        self.start_date = None
+        self.end_date = None
+
     def set_current_date(self, current_date):
         if self.current_date and current_date < self.current_date:
             raise Exception('Cannot set a past date.')
@@ -87,7 +92,7 @@ class PriceHistoryManager():
             load_data_end = end_date + datetime.timedelta(days=self.load_size)
         
         if load_data_start:
-            #print('Query {} {} {}'.format(company_id, load_data_start, load_data_end))
+            print('Query {} {} {}'.format(company_id, load_data_start, load_data_end))
             loaded_data = get_price_history_from_db(session=self.session, company_ids=self.company_ids, start_date=load_data_start, end_date=load_data_end)
             for loaded_company_id in loaded_data:
                 company_history = self.history.setdefault(loaded_company_id, dict())
@@ -96,6 +101,7 @@ class PriceHistoryManager():
             self.last_days_load = max(self.last_days_load, load_data_end)
         
         company_history = self.history.get(company_id)
+
         if company_history:
             temp_history = dict()
             temp_date = start_date

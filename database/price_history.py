@@ -22,6 +22,7 @@ def get_price_history(session, company_ids=None, start_date=None, end_date=None)
     if where:
         query = query.where(and_(*where))
     full_history = dict()
+   # print(query.statement.compile())
     for price_history in session.execute(query):
         company = full_history.setdefault(price_history.company_id, dict())
         company[price_history.trade_date] = price_history

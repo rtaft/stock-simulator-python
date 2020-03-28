@@ -220,8 +220,8 @@ def main():
     #start_date = input("Enter Starting Date:")
     #end_date = input("Enter End Date:")
     start = time.time()
-    start_date = datetime.date(2016, 1, 1)
-    end_date = datetime.date(2017, 1, 1)
+    start_date = datetime.date(2007, 1, 1)
+    end_date = datetime.date(2010, 1, 1)
     starting_balance = 60000
     engine = create_engine('{}://{}:{}@{}/{}'.format(app_config.DB_TYPE, app_config.DB_USER, app_config.DB_PASS, app_config.DB_HOST, app_config.DB_NAME))
     engine.connect()
