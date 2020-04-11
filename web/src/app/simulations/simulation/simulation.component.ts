@@ -19,6 +19,7 @@ export class SimulationComponent implements OnInit {
   private selectedTrader: SimulationTrader;
   private transactions: Transaction[] = [];
   private selectedTransactions: Transaction[];
+  private screen: string;
 
   constructor(private route: ActivatedRoute,
               private simulationService: SimulationService) { }
@@ -51,11 +52,23 @@ export class SimulationComponent implements OnInit {
     }
   }
 
+  show(screen: string) {
+    this.screen = screen;
+  }
+
   getClass(simulation_trader_id: number) {
     if (simulation_trader_id == this.selected) {
       return "menu-item selected-menu-item";
     } else {
       return "menu-item";
+    }
+  }
+
+  getScreenClass(screen: string) {
+    if (screen == this.screen) {
+      return "menu-item submenu selected-menu-item";
+    } else {
+      return "menu-item submenu";
     }
   }
 }

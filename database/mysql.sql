@@ -104,6 +104,7 @@ CREATE TABLE IF NOT EXISTS simulation (
     end_date DATE NOT NULL,
     starting_balance FLOAT NOT NULL,
     description VARCHAR(2000),
+    stock_list VARCHAR(50) NOT NULL,
     PRIMARY KEY (simulation_id)
 );
 
@@ -126,7 +127,8 @@ CREATE TABLE IF NOT EXISTS transaction (
     transaction_type VARCHAR(10) NOT NULL,
     transaction_quantity FLOAT NOT NULL,
     transaction_total FLOAT NOT NULL,
-    symbol VARCHAR(10) NOT NULL,
+    company_id INT NOT NULL,
     PRIMARY KEY (transaction_id),
-    FOREIGN KEY (simulation_trader_id) REFERENCES simulation_trader(simulation_trader_id)
+    FOREIGN KEY (simulation_trader_id) REFERENCES simulation_trader(simulation_trader_id),
+    FOREIGN KEY (company_id) REFERENCES company(company_id)
 );

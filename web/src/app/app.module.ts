@@ -21,7 +21,9 @@ import { SearchComponent } from './data/search.component';
 /* Services */
 import { TraderService } from './services/traders';
 import { SimulationService } from './services/simulations';
-import { ResultsComponent } from './simulations/simulation/results.component';
+import { StockService } from './services/stock';
+import { TransactionsComponent } from './simulations/simulation/transactions.component';
+import { CapitalgainsComponent } from './simulations/simulation/capitalgains.component';
 
 
 @NgModule({
@@ -37,7 +39,8 @@ import { ResultsComponent } from './simulations/simulation/results.component';
     AddComponent,
     SearchComponent,
     SimulationComponent,
-    ResultsComponent,
+    TransactionsComponent,
+    CapitalgainsComponent,
   ],
   imports: [
     BrowserModule,
@@ -49,6 +52,7 @@ import { ResultsComponent } from './simulations/simulation/results.component';
   ],
   providers: [
     SimulationService,
+    StockService,
     TraderService
   ],
   bootstrap: [AppComponent]

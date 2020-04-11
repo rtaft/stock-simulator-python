@@ -1,6 +1,12 @@
 <h1>Run Simulation</h1>
 
-<h4>Select a Trader</h4>
+<h4>Select Information</h4>
+<div >
+    <label for='selectedStockList'>Stock List:</label>
+    <select id='selectedStockList'  [(ngModel)]="selectedStockList">
+        <option *ngFor="let stockList of stockLists" value="{{ stockList }}">{{ stockList }}</option>
+    </select>
+</div>
 
 <div >
     <label for='selectedTrader'>Trader:</label>

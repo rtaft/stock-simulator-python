@@ -1,9 +1,9 @@
 from sqlalchemy import between, and_, distinct
-from database.database import Simulation, Transaction, SimulationTrader, Trader
+from database.database import Company, Simulation, Transaction, SimulationTrader, Trader
 
-def add_simulation(session, start_date, end_date, starting_balance, simulation_date, description):
+def add_simulation(session, start_date, end_date, starting_balance, simulation_date, description, stock_list):
     sim = Simulation(start_date=start_date, end_date=end_date, starting_balance=starting_balance,
-                     simulation_date=simulation_date, description=description)
+                     simulation_date=simulation_date, description=description, stock_list=stock_list)
     session.add(sim)
     return sim
 
@@ -13,14 +13,14 @@ def add_simulation_trader(session, simulation_id, trader_id):
     return sim_trader
 
 def add_transaction(session, sim_trader_id, transaction_date, transaction_quantity, transaction_price, 
-                    transaction_type, transaction_total, symbol):
+                    transaction_type, transaction_total, company_id):
     trans = Transaction(simulation_trader_id=sim_trader_id, transaction_date=transaction_date, transaction_quantity=transaction_quantity, 
-                        transaction_price=transaction_price, transaction_type=transaction_type, transaction_total=transaction_total, symbol=symbol)
+                        transaction_price=transaction_price, transaction_type=transaction_type, transaction_total=transaction_total, company_id=company_id)
     session.add(trans)
     return trans
 
 def get_transactions(session, sim_trader_id):
-    return session.query(Transaction).filter(Transaction.simulation_trader_id == sim_trader_id).all()
+    return session.query(Transaction, Company.symbol).filter(Company.company_id == Transaction.company_id).filter(Transaction.simulation_trader_id == sim_trader_id).all()
 
 def get_simulations(session, index=None, length=None):
     query = session.query(SimulationTrader, Simulation, Trader).join(Simulation).join(Trader)

@@ -16,13 +16,15 @@ def get_price_history(session, company_ids=None, start_date=None, end_date=None)
         where.append(t_price_history.c.company_id.in_(company_ids))
     
     if start_date and end_date:
-        where.append(between(t_price_history.c.trade_date, start_date, end_date))
+        if start_date == end_date:
+            where.append(t_price_history.c.trade_date == start_date)
+        else:
+            where.append(between(t_price_history.c.trade_date, start_date, end_date))
 
     query = t_price_history.select()
     if where:
         query = query.where(and_(*where))
     full_history = dict()
-   # print(query.statement.compile())
     for price_history in session.execute(query):
         company = full_history.setdefault(price_history.company_id, dict())
         company[price_history.trade_date] = price_history

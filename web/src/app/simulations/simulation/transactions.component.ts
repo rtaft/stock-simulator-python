@@ -2,11 +2,11 @@ import { Component, OnInit, Input } from '@angular/core';
 import { SimulationTrader, Transaction } from 'src/app/models/simulation';
 
 @Component({
-  selector: 'app-simulation-results',
-  templateUrl: './results.component.html',
-  styleUrls: ['./results.component.scss']
+  selector: 'app-simulation-transactions',
+  templateUrl: './transactions.component.html',
+  styleUrls: ['./transactions.component.scss']
 })
-export class ResultsComponent implements OnInit {
+export class TransactionsComponent implements OnInit {
   @Input() simulationTrader: SimulationTrader;
   @Input() transactions: Transaction[];
 
@@ -14,6 +14,10 @@ export class ResultsComponent implements OnInit {
 
   ngOnInit() {
 
+  }
+
+  getCellClass() {
+    return ' table-cells';
   }
 
 }

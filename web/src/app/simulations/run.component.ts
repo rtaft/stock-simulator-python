@@ -5,6 +5,7 @@ import { Trader } from '../models/trader';
 import { TraderService } from '../services/traders';
 import { SimulationService } from '../services/simulations';
 import { Simulation, SimulationStatus } from '../models/simulation';
+import { StockService } from '../services/stock';
 
 @Component({
   selector: 'app-run',
@@ -21,8 +22,10 @@ export class RunComponent implements OnInit {
   simulationId: number;
   running = false;
   status: string = 'Not Started'
-  
-  constructor(private traderService: TraderService, private simulationService: SimulationService) { }
+  stockLists = []
+  selectedStockList = 'All'
+
+  constructor(private traderService: TraderService, private simulationService: SimulationService, private stockService: StockService) { }
 
   ngOnInit() {
     this.refresh();
@@ -30,12 +33,13 @@ export class RunComponent implements OnInit {
 
   refresh() {
     this.traderService.listTraders().toPromise().then( result => this.traders = result);
+    this.stockService.getStockList().toPromise().then( result => this.stockLists = result)
   }
 
   runSimulation() {
     if (this.selectedTrader != null && this.tradeStartDate != null && this.tradeEndDate != null && this.tradeStartDate < this.tradeEndDate) {
       this.running = true;
-      this.simulationService.runSimulation(this.selectedTrader, this.tradeStartDate, this.tradeEndDate, this.startingCash, this.description).
+      this.simulationService.runSimulation(this.selectedTrader, this.tradeStartDate, this.tradeEndDate, this.startingCash, this.description, this.selectedStockList).
           toPromise().then( result => this.setSimulationId(result)).catch(result => this.running = false);
     }
   }

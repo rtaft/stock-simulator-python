@@ -31,10 +31,12 @@ def get_companies_by_id(session, company_ids=None):
     return companies
 
 def find_company_by_symbol(session, symbol=None):
+    if not isinstance(symbol, list):
+        symbol = [symbol]
     companies = []
     query = session.query(Company)
     if symbol:
-        query = query.filter(Company.symbol == symbol)
+        query = query.filter(Company.symbol.in_(symbol))
     for company in query.all():
         companies.append(company)
     return companies

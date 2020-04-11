@@ -3,3 +3,17 @@
 @import '~@swimlane/ngx-datatable/assets/icons.css';
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+
+
+.foongx-datatable.bootstrap .datatable-body .datatable-body-row .datatable-body-cell {
+    padding: 0;
+    text-align: center;
+}
+
+.table-cells {
+    padding: 0px 0px 0px 12px !important;
+}
+
+.ngx-datatable.bootstrap .datatable-header .datatable-header-cell {
+    padding: 0px 0px 0px 12px;
+}

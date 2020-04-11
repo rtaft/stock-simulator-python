@@ -82,11 +82,12 @@ class Simulator:
                 self.last_prices = self.todays_prices
                 self.process_day(sim_traders)
             self.current_date = self.current_date + datetime.timedelta(days=1)
-        self.mem.set('progress_{}'.format(simulation_id), 'Completed.')
         for sim_trader, trader in sim_traders.items():
             trader.print_portfolio(self.last_prices)
             trader.print_profit(self.last_prices)
             sim_trader.ending_value = trader.portfolio.get_portfolio_value(self.last_prices)
+            self.sell_all(trader, sim_trader.simulation_trader_id)
+        self.mem.set('progress_{}'.format(simulation_id), 'Completed.')
         self.session.commit()
 
 
@@ -121,7 +122,7 @@ class Simulator:
                     print("Paying Dividend of {} on {} for {}".format(dividend.dividend, self.current_date, stock.symbol))
                 taxes = round(stock.quantity * dividend.dividend * app_config.QUALIFIED_TAX_RATE, 2)
                 payout = round(stock.quantity * dividend.dividend - taxes, 2)
-                add_transaction(self.session, sim_trader_id, self.current_date, stock.quantity, dividend.dividend, 'DIV', payout, stock.symbol)
+                add_transaction(self.session, sim_trader_id, self.current_date, stock.quantity, dividend.dividend, 'DIV', payout, stock.company_id)
                 portfolio.cash += payout
                 portfolio.taxes_paid += taxes
             split = self.split_history.get(stock.company_id, {}).get(self.current_date)
@@ -159,7 +160,7 @@ class Simulator:
             stock_holding = StockHolding(company_id=company_id, symbol=symbol)
             trader.portfolio.stock_holdings[symbol] = stock_holding
        
-        transaction = add_transaction(self.session, sim_trader_id, self.current_date, quantity, current_price, 'BUY', -transaction_cost, symbol)
+        transaction = add_transaction(self.session, sim_trader_id, self.current_date, quantity, current_price, 'BUY', -transaction_cost, company_id)
         stock_holding.transactions.append(transaction)
         stock_holding.quantity += quantity
         stock_holding.cost_basis += transaction_cost
@@ -169,10 +170,12 @@ class Simulator:
     def sell(self, trader, symbol, quantity, sim_trader_id):
         company_id = self.datasets[symbol].company.company_id
         stock_holding = trader.portfolio.get_stock_holdings().get(symbol)
+        if stock_holding.quantity < quantity:
+            raise Exception("Cannot sell {} shares of {}, there are only {} in the portfolio.".format(quantity, symbol, stock_holding.quantity))
         current_price = self.history.get_current_price(company_id).trade_close
         transaction_value = current_price * quantity - app_config.TRADE_FEES
         trader.portfolio.fees += app_config.TRADE_FEES
-        transaction = add_transaction(self.session, sim_trader_id, self.current_date, -quantity, current_price, 'SELL', transaction_value, symbol)
+        transaction = add_transaction(self.session, sim_trader_id, self.current_date, -quantity, current_price, 'SELL', transaction_value, company_id)
         stock_holding.transactions.append(transaction)
         stock_holding.quantity -= quantity
         trader.portfolio.cash += transaction_value
@@ -183,6 +186,12 @@ class Simulator:
             trader.portfolio.previous_holdings.append(stock_holding)
             del trader.portfolio.stock_holdings[symbol]
         print('Sold {} of {} on {} for {:.2f}'.format(quantity, symbol, self.current_date, transaction_value))
+
+    def sell_all(self, trader, sim_trader_id):
+        data = dict()
+        data.update(trader.portfolio.get_stock_holdings())
+        for symbol, stock in data.items():
+            self.sell(trader, symbol, stock.quantity, sim_trader_id)
 
     def initiate_traders(self, trader_data, starting_cash=0):
         """
@@ -223,17 +232,18 @@ def main():
     start_date = datetime.date(2007, 1, 1)
     end_date = datetime.date(2010, 1, 1)
     starting_balance = 60000
+    stock_list = 'SP500'
     engine = create_engine('{}://{}:{}@{}/{}'.format(app_config.DB_TYPE, app_config.DB_USER, app_config.DB_PASS, app_config.DB_HOST, app_config.DB_NAME))
     engine.connect()
     Session = sessionmaker(bind=engine)
     session = Session()
     #TODO load all traders.  Auto vs config?
-    simulator = Simulator(session=session, stock_list_name='SP500')
+    simulator = Simulator(session=session, stock_list_name=stock_list)
     traders = simulator.initiate_traders(
          {1: dict(starting_cash=starting_balance, max_holding=30, loss_sell_ratio=0.5, gain_sell_ratio=2.0, minimum_transaction=2000),
           2: dict(starting_cash=starting_balance)})
 
-    simulation = add_simulation(session, start_date, end_date, starting_balance, datetime.datetime.now(), 'Temp Description')
+    simulation = add_simulation(session, start_date, end_date, starting_balance, datetime.datetime.now(), 'Temp Description', stock_list)
     sim_traders = dict()
     session.commit()
     for trader in traders:

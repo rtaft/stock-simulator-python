@@ -13,6 +13,9 @@ def get_stock_list_name(session, name):
 def add_stock_list(session, company_id, list_id, start_date=None, end_date=None):
     session.add(StockListDatum(company_id=company_id, list_id=list_id, date_added=start_date, date_removed=end_date))
 
+def get_stock_lists(session):
+    return session.query(StockList).all()
+
 def get_current_stock_list(session, name):
     query1 = session.query(StockList.list_id).filter(StockList.name == name)
     query2 = session.query(StockListDatum.company_id).filter(and_(StockListDatum.list_id == query1, StockListDatum.date_removed == None))

@@ -3,10 +3,17 @@
     <nav class="left-panel">
         <ul class="menu">
             <li [ngClass]="getClass(-1)" (click)="select(-1)">Summary</li>
-            <li [ngClass]="getClass(trader.simulation_trader_id)" *ngFor="let trader of simulationTraders" (click)="select(trader.simulation_trader_id)">{{ trader.name }}</li>
+            <ng-container *ngFor="let trader of simulationTraders" >
+                <li [ngClass]="getClass(trader.simulation_trader_id)" (click)="select(trader.simulation_trader_id)">{{ trader.name }}</li>
+                <ul class="menu" *ngIf="selected == trader.simulation_trader_id">
+                    <li (click)="show('capital_gains')" [ngClass]="getScreenClass('capital_gains')">Capital Gains</li>
+                    <li (click)="show('transactions')" [ngClass]="getScreenClass('transactions')">Transactions</li>
+                </ul>
+            </ng-container>
         </ul>
     </nav>
     <div class="right-panel">
-        <app-simulation-results *ngIf="selected != -1" [simulationTrader]="selectedTrader" [transactions]="selectedTransactions"></app-simulation-results>
+        <app-simulation-transactions *ngIf="selected != -1 && screen == 'transactions'" [simulationTrader]="selectedTrader" [transactions]="selectedTransactions"></app-simulation-transactions>
+        <app-simulation-capitalgains *ngIf="selected != -1 && screen == 'capital_gains'" [simulationTrader]="selectedTrader" [transactions]="selectedTransactions"></app-simulation-capitalgains>
     </div>
 </div>

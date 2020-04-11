@@ -28,11 +28,20 @@ export class SimulationTrader {
 export class Transaction {
     transaction_id: number;
     simulation_trader_id: number;
-    transaction_date: Date;
+    transaction_date: string;
     transaction_price: number;
     transaction_type: string;
     transaction_quantity: number;
     transaction_total: number;
     symbol: string;
     balance: number;
+}
+
+export class CapitalGain {
+    company_id: number;
+    symbol: string;
+    initial_purchase_date: Date;
+    cost_basis: number;
+    sell_date: Date;
+    proceeds: number;
 }

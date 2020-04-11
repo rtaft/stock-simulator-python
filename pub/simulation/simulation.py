@@ -29,8 +29,8 @@ class SimulationRunSchema(Schema):
     end_date = fields.Date(required=True)
     starting_cash = fields.Int(required=True)
     description = fields.String(default="None Specified")
+    stock_list = fields.String(required=True)
     # TODO params
-    # TODO datasets
 
 @API.route('/simulation', methods=['GET', 'POST'])
 class SimulationHandler (restful.Resource):
@@ -46,7 +46,8 @@ class SimulationHandler (restful.Resource):
                                                   valid_data['end_date'],
                                                   valid_data['starting_cash'],
                                                   datetime.datetime.now(),
-                                                  valid_data['description'])
+                                                  valid_data['description'],
+                                                  valid_data['stock_list'])
         DB.commit()
         mem = memcache.Client([(app_config.MEMCACHE_HOST, app_config.MEMCACHE_PORT)])
         progress = mem.set('progress_{}'.format(valid_data['simulation'].simulation_id), 'Requested')
@@ -62,7 +63,7 @@ class SimulationHandler (restful.Resource):
             session = Session()
             print(data)
 
-            simulator = Simulator(session=session)
+            simulator = Simulator(session=session, stock_list_name=data['stock_list'])
             # TODO multiple traders support
             # TODO trader config support
             traders = simulator.initiate_traders({data['trader_id']: dict(starting_cash=data['starting_cash'])})
