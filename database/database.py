@@ -42,6 +42,15 @@ class Simulation(Base):
     stock_list = Column(String(50))
 
 
+class SplitHistoryBak(Base):
+    __tablename__ = 'split_history.bak'
+
+    split_id = Column(INTEGER(11), primary_key=True)
+    company_id = Column(INTEGER(11), nullable=False, index=True)
+    split_date = Column(Date)
+    ratio = Column(Float, nullable=False)
+
+
 class StockList(Base):
     __tablename__ = 'stock_list'
 
@@ -118,6 +127,7 @@ class Transaction(Base):
     transaction_quantity = Column(Float, nullable=False)
     transaction_total = Column(Float, nullable=False)
     company_id = Column(ForeignKey('company.company_id'), nullable=False, index=True)
+    transaction_tax = Column(Float, nullable=False, server_default=text("'0'"))
 
     company = relationship('Company')
     simulation_trader = relationship('SimulationTrader')

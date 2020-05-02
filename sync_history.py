@@ -102,9 +102,6 @@ class SyncHistory:
 
         for index in reversed(history.index):
             try:
-                if history.loc[index, 'Stock Splits']:
-                    multiplier *= float(history.loc[index, 'Stock Splits'])
-                    splits.append(dict(company_id=company['company_id'], split_date=index, ratio=float(history.loc[index, 'Stock Splits'])))
                 if not math.isnan(history.loc[index, 'Close']):
                     price_history.append(dict(company_id=company['company_id'], 
                                               trade_date=index,
@@ -112,6 +109,9 @@ class SyncHistory:
                                               trade_volume=int(history.loc[index, 'Volume'])))
                 if history.loc[index, 'Dividends']:
                     dividends.append(dict(company_id=company['company_id'], ex_date=index, dividend=round(float(history.loc[index, 'Dividends'] * multiplier), 3)))
+                if history.loc[index, 'Stock Splits']:
+                    multiplier *= float(history.loc[index, 'Stock Splits'])
+                    splits.append(dict(company_id=company['company_id'], split_date=index, ratio=float(history.loc[index, 'Stock Splits'])))
             except:
                 print('Error {}'.format(company['symbol']))
                 print(history.loc[index])

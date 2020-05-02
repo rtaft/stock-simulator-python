@@ -124,6 +124,7 @@ CREATE TABLE IF NOT EXISTS transaction (
     simulation_trader_id INT NOT NULL,
     transaction_date TIMESTAMP NOT NULL,
     transaction_price FLOAT NOT NULL,
+    transaction_tax FLOAT DEFAULT 0 NOT NULL,
     transaction_type VARCHAR(10) NOT NULL,
     transaction_quantity FLOAT NOT NULL,
     transaction_total FLOAT NOT NULL,

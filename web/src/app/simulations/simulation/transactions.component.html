@@ -41,9 +41,14 @@
           {{ row['transaction_price'] | currency }}
         </ng-template>
       </ngx-datatable-column>
+      <ngx-datatable-column name="Taxes" [flexGrow]="2" [cellClass]="getCellClass">
+        <ng-template let-row="row" ngx-datatable-cell-template>
+          {{ row['transaction_tax'] | currency }}
+        </ng-template>
+      </ngx-datatable-column>
       <ngx-datatable-column name="Total" [flexGrow]="2" [cellClass]="getCellClass">
         <ng-template let-row="row" ngx-datatable-cell-template>
-          {{ row['transaction_quantity'] * row['transaction_price'] | currency }}
+          {{ row['transaction_total'] | currency }}
         </ng-template>
       </ngx-datatable-column>
       <ngx-datatable-column name="Cash Balance" [flexGrow]="2" [cellClass]="getCellClass">

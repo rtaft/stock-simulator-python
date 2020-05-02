@@ -1,6 +1,6 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { SimulationTrader, Transaction } from 'src/app/models/simulation';
-import { StockService } from 'src/app/services/stock';
+import { SimulationTrader, CapitalGain } from 'src/app/models/simulation';
+import { SimulationService } from 'src/app/services/simulations';
 
 @Component({
   selector: 'app-simulation-capitalgains',
@@ -9,17 +9,16 @@ import { StockService } from 'src/app/services/stock';
 })
 export class CapitalgainsComponent implements OnInit {
   @Input() simulationTrader: SimulationTrader;
-  @Input() transactions: Transaction[];
-  constructor(private stockService: StockService) { }
+  @Input() capitalGains: CapitalGain[];
+
+  constructor(private simulationService: SimulationService) { }
 
   ngOnInit() {
-    const symbols = [];
-    for (const transaction of this.transactions) {
-      if (transaction.transaction_type == 'BUY') {
-        symbols.push(transaction.symbol);
-      }
-    }
-    this.stockService.getStockHistory(symbols, this.simulationTrader.end_date, this.simulationTrader.end_date).toPromise().then(result => console.log(result))
+    this.simulationService.getCapitalGains(this.simulationTrader.simulation_trader_id).toPromise().then(result => this.capitalGains = result);
+  }
+
+  getCellClass() {
+    return ' table-cells';
   }
 
 }

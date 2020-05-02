@@ -9,7 +9,11 @@ class SimpleTrader(TraderInterface):
         self.max_holdings = params.get('max_holding', 3)
         self.loss_sell_ratio = params.get('loss_sell_ratio', 0.8)
         self.gain_sell_ratio = params.get('gain_sell_ratio', 1.5)
+        self.half_gain_ratio = ((self.gain_sell_ratio - 1) / 2.0) + 1
         self.minimum_transaction = params.get('minimum_transaction', 333)
+        self.profit_sale = dict()
+        self.half_profit_sale = dict()
+        self.loss_sale = dict()
 
     def get_name(self):
         return 'Simple Trader'
@@ -21,8 +25,17 @@ class SimpleTrader(TraderInterface):
             for holding in self.portfolio.get_stock_holdings_list():
                 if datasets.get(holding.symbol).get_current_price() and datasets.get(holding.symbol).get_current_price().trade_close:
                     current_value = datasets.get(holding.symbol).get_current_price().trade_close * holding.quantity
-                    if current_value > (holding.cost_basis * self.gain_sell_ratio) or current_value < (holding.cost_basis * self.loss_sell_ratio):
+
+                    if holding.symbol in self.half_profit_sale.keys() and current_value > self.half_profit_sale[holding.symbol] * holding.quantity:
+                        print("HALF SALE {}".format(holding.symbol))
+                        self.sell(holding.symbol, holding.quantity//2, simulation_trade_id)
+                        del self.half_profit_sale[holding.symbol]
+                        ignore.append(holding.symbol)
+                    elif (holding.symbol not in self.half_profit_sale.keys() and current_value > self.profit_sale[holding.symbol] * holding.quantity) or current_value < self.loss_sale[holding.symbol] * holding.quantity:
                         self.sell(holding.symbol, holding.quantity, simulation_trade_id)
+                        if holding.symbol in self.half_profit_sale:
+                            del self.half_profit_sale[holding.symbol]
+                        del self.profit_sale[holding.symbol]
                         ignore.append(holding.symbol)
                 else:
                     print('No History for {} on {}'.format(holding.symbol, current_date))
@@ -38,7 +51,7 @@ class SimpleTrader(TraderInterface):
                     if company.get_current_price() and \
                     company.get_current_price().trade_close > 1 and \
                     company.get_current_price().trade_close < max_sale and \
-                    symbol not in ignore:
+                    symbol not in ignore and symbol not in [holding.symbol for holding in self.portfolio.get_stock_holdings_list()]:
                         sma20 = get_simple_moving_average(company.price_history, company.company.company_id, 20, 1)[0]
                         sma50 = get_simple_moving_average(company.price_history, company.company.company_id, 50, 1)[0]
                         if sma20 and sma50:
@@ -49,6 +62,9 @@ class SimpleTrader(TraderInterface):
                 if best_company:
                     quantity = max_sale // best_company.get_current_price().trade_close
                     self.buy(best_company.company.symbol, quantity, simulation_trade_id)
+                    self.profit_sale[best_company.company.symbol] = best_company.get_current_price().trade_close * self.gain_sell_ratio
+                    self.half_profit_sale[best_company.company.symbol] =  best_company.get_current_price().trade_close * self.half_gain_ratio
+                    self.loss_sale[best_company.company.symbol] =  best_company.get_current_price().trade_close * self.loss_sell_ratio
                     ignore.append(best_company.company.symbol)
                     to_buy -= 1
                 else:

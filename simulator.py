@@ -122,7 +122,7 @@ class Simulator:
                     print("Paying Dividend of {} on {} for {}".format(dividend.dividend, self.current_date, stock.symbol))
                 taxes = round(stock.quantity * dividend.dividend * app_config.QUALIFIED_TAX_RATE, 2)
                 payout = round(stock.quantity * dividend.dividend - taxes, 2)
-                add_transaction(self.session, sim_trader_id, self.current_date, stock.quantity, dividend.dividend, 'DIV', payout, stock.company_id)
+                add_transaction(self.session, sim_trader_id, self.current_date, stock.quantity, dividend.dividend, taxes, 'DIV', payout, stock.company_id)
                 portfolio.cash += payout
                 portfolio.taxes_paid += taxes
             split = self.split_history.get(stock.company_id, {}).get(self.current_date)
@@ -130,6 +130,7 @@ class Simulator:
                 if not app_config.DEBUG:
                     print("Processing split of {} on {} for {}".format(split.ratio, self.current_date, stock.symbol))
                 stock.quantity *= split.ratio
+                add_transaction(self.session, sim_trader_id, self.current_date, split.ratio, 0, 0, 'SPLIT', 0, stock.company_id)
 
     def get_day_prices(self):
         try:
@@ -160,7 +161,7 @@ class Simulator:
             stock_holding = StockHolding(company_id=company_id, symbol=symbol)
             trader.portfolio.stock_holdings[symbol] = stock_holding
        
-        transaction = add_transaction(self.session, sim_trader_id, self.current_date, quantity, current_price, 'BUY', -transaction_cost, company_id)
+        transaction = add_transaction(self.session, sim_trader_id, self.current_date, quantity, current_price, 0, 'BUY', -transaction_cost, company_id)
         stock_holding.transactions.append(transaction)
         stock_holding.quantity += quantity
         stock_holding.cost_basis += transaction_cost
@@ -175,7 +176,7 @@ class Simulator:
         current_price = self.history.get_current_price(company_id).trade_close
         transaction_value = current_price * quantity - app_config.TRADE_FEES
         trader.portfolio.fees += app_config.TRADE_FEES
-        transaction = add_transaction(self.session, sim_trader_id, self.current_date, -quantity, current_price, 'SELL', transaction_value, company_id)
+        transaction = add_transaction(self.session, sim_trader_id, self.current_date, -quantity, current_price, 0, 'SELL', transaction_value, company_id)
         stock_holding.transactions.append(transaction)
         stock_holding.quantity -= quantity
         trader.portfolio.cash += transaction_value
@@ -188,6 +189,7 @@ class Simulator:
         print('Sold {} of {} on {} for {:.2f}'.format(quantity, symbol, self.current_date, transaction_value))
 
     def sell_all(self, trader, sim_trader_id):
+        print('sell all')
         data = dict()
         data.update(trader.portfolio.get_stock_holdings())
         for symbol, stock in data.items():

@@ -50,7 +50,14 @@ class PriceHistoryManager():
         return temp_data
 
     def get_current_price(self, company_id):
-        return self.get_price_history(company_id, self.current_date, self.current_date).get(self.current_date)
+        last_trade_date = self.current_date
+
+        for _ in range(7):
+            recent_prices = self.get_price_history(company_id, last_trade_date, last_trade_date)
+            if last_trade_date in recent_prices:
+                return recent_prices.get(last_trade_date)
+            last_trade_date = last_trade_date - datetime.timedelta(days=1)
+        return None
     
     def get_days_prices(self, company_ids=None):
         todays_prices = dict()

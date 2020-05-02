@@ -14,6 +14,6 @@
     </nav>
     <div class="right-panel">
         <app-simulation-transactions *ngIf="selected != -1 && screen == 'transactions'" [simulationTrader]="selectedTrader" [transactions]="selectedTransactions"></app-simulation-transactions>
-        <app-simulation-capitalgains *ngIf="selected != -1 && screen == 'capital_gains'" [simulationTrader]="selectedTrader" [transactions]="selectedTransactions"></app-simulation-capitalgains>
+        <app-simulation-capitalgains *ngIf="selected != -1 && screen == 'capital_gains'" [simulationTrader]="selectedTrader"></app-simulation-capitalgains>
     </div>
 </div>
