@@ -7,7 +7,7 @@ from marshmallow import Schema, fields, validate
 
 from api.helpers import success, created
 from api.exceptions import NotFound
-from api.restful import API, DB
+from api.restful import API
 
 from database.trader import get_traders, add_trader, delete_trader
 
@@ -21,11 +21,10 @@ class TraderAddSchema(TraderEditSchema):
 @API.route('/trader', methods=['GET', 'POST'])
 class TraderHandler (restful.Resource):
     def get(self):
-        traders = get_traders(DB)
+        traders = get_traders(flask.g.db)
         if not request.args:
             for trader in traders:
                 del trader.location
-                print (trader.__dict__)
             return success(traders)
         elif request.args['location'] == 'disk':
             files = os.listdir('traders')
@@ -52,8 +51,8 @@ class TraderHandler (restful.Resource):
 
         #TODO validate it doesn't already exist?
 
-        add_trader(DB, valid_data['name'], valid_data['location'])
-        DB.commit()
+        add_trader(flask.g.db, valid_data['name'], valid_data['location'])
+        flask.g.db.commit()
         return success()
 
 @API.route('/trader/<int:trader_id>', methods=['PUT', 'DELETE'])
@@ -65,12 +64,12 @@ class TraderEditHandler (restful.Resource):
         trader = get_traders(trader_ids=[trader_id])
         if trader:
             trader[0].name = valid_data['name']
-            DB.commit()
+            flask.g.db.commit()
             return success()
         raise NotFound()
 
     def delete(self, trader_id):
         # TODO permissions / validation
-        delete_trader(DB, trader_id)
-        DB.commit()
+        delete_trader(flask.g.db, trader_id)
+        flask.g.db.commit()
         return success()

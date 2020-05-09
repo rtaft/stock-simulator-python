@@ -8,12 +8,13 @@ from flask import request
 import flask_restful as restful
 from marshmallow import Schema, fields, validate
 from concurrent.futures import ThreadPoolExecutor
+from flask_socketio import send, emit, join_room, leave_room
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from api.helpers import success, created
 from api.exceptions import NotFound
-from api.restful import API, DB
+from api.restful import API, APP, SOCK
 
 import app_config
 from simulator import Simulator
@@ -35,22 +36,22 @@ class SimulationRunSchema(Schema):
 @API.route('/simulation', methods=['GET', 'POST'])
 class SimulationHandler (restful.Resource):
     def get(self):
-        return success(get_simulations(DB))
+        return success(get_simulations(flask.g.db))
 
     def post(self):
         data = request.get_json(force=True)
         valid_data = SimulationRunSchema().load(data)
         valid_data['params'] = {}
-        valid_data['simulation'] = add_simulation(DB,
+        valid_data['simulation'] = add_simulation(flask.g.db,
                                                   valid_data['start_date'], 
                                                   valid_data['end_date'],
                                                   valid_data['starting_cash'],
                                                   datetime.datetime.now(),
                                                   valid_data['description'],
                                                   valid_data['stock_list'])
-        DB.commit()
+        flask.g.db.commit()
         mem = memcache.Client([(app_config.MEMCACHE_HOST, app_config.MEMCACHE_PORT)])
-        progress = mem.set('progress_{}'.format(valid_data['simulation'].simulation_id), 'Requested')
+        mem.set('progress_{}'.format(valid_data['simulation'].simulation_id), 'Requested')
         EXECUTOR.submit(self.run_simulation, valid_data)
         return success(valid_data['simulation'].simulation_id)
 
@@ -74,14 +75,21 @@ class SimulationHandler (restful.Resource):
                 sim_trader = add_simulation_trader(session, data['simulation'].simulation_id, trader.trader_id)
                 session.commit()
                 sim_traders[sim_trader] = trader
-            simulator.start(data['start_date'], data['end_date'], sim_traders, data['simulation'].simulation_id)
-
-            # TODO return results through get call
+            simulator.start(data['start_date'], data['end_date'], sim_traders, data['simulation'].simulation_id, self.callback)
 
         except Exception as e:
             print(e)
         finally:
             session.close()
+
+    @SOCK.on('ws')
+    def callback(self, simulation_id, message):
+        try:
+            with APP.test_request_context('/api/simulation'):
+                SOCK.send(message)
+        except:
+            pass
+
 
     def get_class(self, kls ):
         parts = kls.split('.')
@@ -103,4 +111,4 @@ class SimulationStatusHandler (restful.Resource):
 @API.route('/simulation/<int:simulation_id>', methods=['GET'])
 class SimulationResultsHandler (restful.Resource):
     def get(self, simulation_id):
-        return success(get_simulation_traders(DB, simulation_id=simulation_id))
+        return success(get_simulation_traders(flask.g.db, simulation_id=simulation_id))

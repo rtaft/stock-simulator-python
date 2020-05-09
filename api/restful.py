@@ -1,6 +1,7 @@
 from flask import Flask, request
 import flask
 from flask_restful import Api
+from flask_socketio import SocketIO
 import requests
 from functools import wraps
 import threading
@@ -14,7 +15,7 @@ import app_config
 
 APP = Flask(__name__)
 API = Api(APP)
-
+SOCK = SocketIO(APP)
 
 def connect():
     engine = create_engine('{}://{}:{}@{}/{}'.format(app_config.DB_TYPE, app_config.DB_USER, app_config.DB_PASS, app_config.DB_HOST, app_config.DB_NAME))
@@ -22,15 +23,13 @@ def connect():
     Session = sessionmaker(bind=engine)
     return Session()
 
-DB = connect()
-
 @APP.before_request
 def setup():
-    pass
+    flask.g.db = connect()
 
 @APP.teardown_request
 def teardown(response):
-    DB.close()
+    flask.g.db.close()
 
 @APP.errorhandler(HttpError)
 def handle_http_error(http_error):

@@ -3,7 +3,7 @@ from flask import request
 import flask_restful as restful
 
 from api.helpers import success, created
-from api.restful import API, DB
+from api.restful import API
 
 from database.stock import get_stock_lists
 
@@ -11,6 +11,6 @@ from database.stock import get_stock_lists
 class DatasetHandler (restful.Resource):
     def get(self):
         names = ['All']
-        for stock_list in get_stock_lists(DB):
+        for stock_list in get_stock_lists(flask.g.db):
             names.append(stock_list.name)
         return success(names)

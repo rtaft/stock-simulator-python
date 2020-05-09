@@ -6,7 +6,7 @@ from marshmallow import Schema, fields, validate
 
 from api.helpers import success, created
 from api.exceptions import NotFound
-from api.restful import API, DB
+from api.restful import API
 
 import app_config
 from database.company import find_company_by_symbol
@@ -18,13 +18,13 @@ class StockHistoryHandler (restful.Resource):
         symbols = request.args['symbols'].split(',')
         start_date = request.args['start_date']
         end_date = request.args['end_date']
-        companies = find_company_by_symbol(DB, symbols)
+        companies = find_company_by_symbol(flask.g.db, symbols)
         company_ids = [company.company_id for company in companies]
         
-        history = get_price_history(session=DB, company_ids=company_ids, start_date=start_date, end_date=end_date)
+        history = get_price_history(session=flask.g.db, company_ids=company_ids, start_date=start_date, end_date=end_date)
         if not history:
             start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d') - datetime.timedelta(days=3)
-            history = get_price_history(session=DB, company_ids=company_ids, start_date=start_date, end_date=end_date)
+            history = get_price_history(session=flask.g.db, company_ids=company_ids, start_date=start_date, end_date=end_date)
         
         converted = dict()
         for company_id, data in history.items():

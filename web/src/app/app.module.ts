@@ -25,6 +25,8 @@ import { StockService } from './services/stock';
 import { TransactionsComponent } from './simulations/simulation/transactions.component';
 import { CapitalgainsComponent } from './simulations/simulation/capitalgains.component';
 
+import { SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
+const config: SocketIoConfig = { url: 'http://localhost:4200', options: {} };
 
 @NgModule({
   declarations: [
@@ -48,7 +50,8 @@ import { CapitalgainsComponent } from './simulations/simulation/capitalgains.com
     FormsModule,
     HttpClientModule,
     MDBBootstrapModule.forRoot(),
-    NgxDatatableModule
+    NgxDatatableModule,
+    SocketIoModule.forRoot(config)
   ],
   providers: [
     SimulationService,

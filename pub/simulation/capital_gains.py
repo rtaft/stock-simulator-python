@@ -5,7 +5,7 @@ from marshmallow import Schema, fields, validate
 
 from api.helpers import success, created
 from api.exceptions import NotFound
-from api.restful import API, DB
+from api.restful import API
 
 import app_config
 from database.simulation import get_transactions
@@ -13,7 +13,7 @@ from database.simulation import get_transactions
 @API.route('/capital_gains/<int:sim_trader_id>', methods=['GET'])
 class CapitalGainsHandler (restful.Resource):
     def get(self, sim_trader_id):
-        return success(get_capital_gains(get_transactions(DB, sim_trader_id)))
+        return success(get_capital_gains(get_transactions(flask.g.db, sim_trader_id)))
 
 def get_capital_gains(transactions):
     # FIFO, LIFO, Highest Cost, Lowest Cost, Tax Efficient (lowest gains)
@@ -28,7 +28,6 @@ def get_capital_gains(transactions):
         
         if transaction.transaction_type == 'SPLIT':
             for purchase in purchases:
-                print('Splitting {} from {} to {}'.format(symbol, purchase.transaction_quantity, purchase.transaction_quantity * transaction.transaction_quantity))
                 purchase.transaction_quantity = purchase.transaction_quantity * transaction.transaction_quantity
 
         if transaction.transaction_type == 'SELL':

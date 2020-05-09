@@ -5,7 +5,7 @@ from marshmallow import Schema, fields, validate
 
 from api.helpers import success, created
 from api.exceptions import NotFound
-from api.restful import API, DB
+from api.restful import API
 
 import app_config
 from database.simulation import get_transactions
@@ -15,7 +15,7 @@ class TransactionHandler (restful.Resource):
     def get(self, sim_trader_id):
         transactions = []
         
-        for transaction, symbol in get_transactions(DB, sim_trader_id):
+        for transaction, symbol in get_transactions(flask.g.db, sim_trader_id):
             transactions.append(transaction)
             transaction.__dict__['symbol'] = symbol
         

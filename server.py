@@ -2,8 +2,7 @@ import importlib
 import pkgutil
 
 import app_config
-from api.restful import APP
-
+from api.restful import APP, SOCK
 import pub
 
 
@@ -29,4 +28,5 @@ def import_submodules(package):
 import_submodules(pub)
 
 if __name__ == "__main__":
-    APP.run(host='0.0.0.0', port=app_config.API_PORT, debug=True, threaded=False)
+    SOCK.run(APP, host='0.0.0.0', port=app_config.API_PORT, debug=True)
+    #APP.run(host='0.0.0.0', port=app_config.API_PORT, debug=True, threaded=True)

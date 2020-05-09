@@ -65,16 +65,20 @@ class Simulator:
         self.history.initial_load(current_date=self.current_date)
         print('Data Load Took {:.0f}s'.format(time.time()-start))
 
-    def start(self, start_date, end_date, sim_traders, simulation_id):
+    def start(self, start_date, end_date, sim_traders, simulation_id, callback=None):
         """
             :param sim_traders: dict of simulation_traders to traders
         """
         self.current_date = start_date
         self.mem.set('progress_{}'.format(simulation_id), 'Loading...')
+        if callback:
+            callback(simulation_id, 'Loading...')
         self.setup_datasets()
         while self.current_date < end_date:
             self.history.set_current_date(self.current_date)
             self.mem.set('progress_{}'.format(simulation_id), self.current_date)
+            if callback:
+                callback(simulation_id, self.current_date)
             if app_config.DEBUG:
                 print ('Process Day {}'.format(self.current_date))
             self.todays_prices = self.get_day_prices()
@@ -87,6 +91,8 @@ class Simulator:
             trader.print_profit(self.last_prices)
             sim_trader.ending_value = trader.portfolio.get_portfolio_value(self.last_prices)
             self.sell_all(trader, sim_trader.simulation_trader_id)
+        if callback:
+            callback(simulation_id, 'Completed.')
         self.mem.set('progress_{}'.format(simulation_id), 'Completed.')
         self.session.commit()
 
