@@ -1,8 +1,8 @@
 import { Component, OnInit, ɵɵcontainerRefreshEnd } from '@angular/core';
 //import {webSocket, WebSocketSubject} from 'rxjs/webSocket';
 import { Socket } from 'ngx-socket-io';
-import { Observable } from "rxjs";
-
+import { Observable, Subscription } from "rxjs";
+import { Router } from '@angular/router';
 import { Trader } from '../models/trader';
 
 import { TraderService } from '../services/traders';
@@ -27,14 +27,14 @@ export class RunComponent implements OnInit {
   status: string = 'Not Started'
   stockLists = []
   selectedStockList = 'DOW'
-  progress;
+  progress: Observable<string>;
+  subscription: Subscription;
 
   constructor(private traderService: TraderService,
               private simulationService: SimulationService, 
               private stockService: StockService,
-              private socket: Socket) { 
-
-    this.progress = this.socket.fromEvent<string>('ws')
+              private socket: Socket,
+              private router: Router ) { 
   }
 
   ngOnInit() {
@@ -56,27 +56,19 @@ export class RunComponent implements OnInit {
 
   setSimulationId(simId) {
     this.simulationId = simId;
-    this.progress.subscribe(data => console.log(data))
-    //this.pollStatus();
+    if (this.subscription == null) {
+      this.progress = this.socket.fromEvent<string>('/simulation/' + simId);
+      this.subscription = this.progress.subscribe(data => this.updateStatus(data));
+    }
   }
 
-  wsTest() {
-    //const myWebSocket: WebSocketSubject<string> = webSocket('ws://localhost:5000/socket.io/');
-    //myWebSocket.asObservable().subscribe(dataFromServer => console.log(dataFromServer));
-    this.socket.emit("new-message", 'message');
-  }
-
-  pollStatus() {
-    this.simulationService.getSimulationStatus(this.simulationId).toPromise().then(result => this.updateStatus(result));
-  }
-
-  updateStatus(status:SimulationStatus) {
-    this.status = status.status;
+  updateStatus(status:string) {
+    this.status = status;
     if (this.status === 'Completed.') {
       this.running = false;
-      // TODO redirect to results
-    } else {
-      setTimeout(() => {this.pollStatus()}, 1000)
-    }
+      this.subscription.unsubscribe();
+      this.subscription = null;
+      this.router.navigate(['/simulations/' + this.simulationId]);
+    } 
   }
 }

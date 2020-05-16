@@ -27,7 +27,6 @@ export class SimulationComponent implements OnInit {
   ngOnInit() {
     this.sub = this.route.params.subscribe(params => {
       this.simulation_id = +params['simulation_id']; // (+) converts string 'id' to a number
-      console.log(this.simulation_id);
       this.simulationService.getSimulation(this.simulation_id).toPromise().then(result => {
         this.simulationTraders = result;
         for (let simTrader of this.simulationTraders) {
@@ -44,11 +43,13 @@ export class SimulationComponent implements OnInit {
   select(simulation_trader_id: number) {
     this.selected = simulation_trader_id;
     this.selectedTrader = this.simulationTraders.find( simTrader => simTrader.simulation_trader_id == simulation_trader_id);
-    this.selectedTransactions = this.transactions.filter( transaction => transaction.simulation_trader_id == simulation_trader_id);
-    let cash = this.selectedTrader.starting_balance;
-    for (const transaction of this.selectedTransactions) {
-      cash += transaction.transaction_total;
-      transaction.balance = cash;
+    if (this.selectedTrader) {
+      this.selectedTransactions = this.transactions.filter( transaction => transaction.simulation_trader_id == simulation_trader_id);
+      let cash = this.selectedTrader.starting_balance;
+      for (const transaction of this.selectedTransactions) {
+        cash += transaction.transaction_total;
+        transaction.balance = cash;
+      }
     }
   }
 

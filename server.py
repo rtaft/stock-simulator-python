@@ -4,7 +4,8 @@ import pkgutil
 import app_config
 from api.restful import APP, SOCK
 import pub
-
+import eventlet 
+eventlet.monkey_patch() 
 
 def import_submodules(package):
     """ Import all submodules of a module, recursively, including subpackages
@@ -27,6 +28,10 @@ def import_submodules(package):
 
 import_submodules(pub)
 
+@SOCK.on('connect')
+def connect():
+    print('Websocket Connection')
+
 if __name__ == "__main__":
-    SOCK.run(APP, host='0.0.0.0', port=app_config.API_PORT, debug=True)
+    SOCK.run(APP, host='0.0.0.0', port=app_config.API_PORT, debug=False)
     #APP.run(host='0.0.0.0', port=app_config.API_PORT, debug=True, threaded=True)

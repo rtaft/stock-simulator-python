@@ -23,7 +23,6 @@ export class SimulationsComponent implements OnInit {
   onSelect(event) {
     if (event.type == 'click') {
       this.router.navigateByUrl('simulations/' + event.row.simulation_id, event.row);
-      console.log(event.row.simulation_id);
     }
   }
 }

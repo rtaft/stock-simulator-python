@@ -29,7 +29,8 @@ def setup():
 
 @APP.teardown_request
 def teardown(response):
-    flask.g.db.close()
+    if hasattr(flask.g, 'db'):
+        flask.g.db.close()
 
 @APP.errorhandler(HttpError)
 def handle_http_error(http_error):

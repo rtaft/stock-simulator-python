@@ -82,13 +82,13 @@ class SimulationHandler (restful.Resource):
         finally:
             session.close()
 
-    @SOCK.on('ws')
     def callback(self, simulation_id, message):
         try:
             with APP.test_request_context('/api/simulation'):
-                SOCK.send(message)
-        except:
-            pass
+                SOCK.emit('/simulation/{}'.format(simulation_id), '{}'.format(message))
+        except Exception as e:
+            print (e)
+
 
 
     def get_class(self, kls ):
