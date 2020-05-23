@@ -86,7 +86,7 @@ class SimulationTrader(Base):
     simulation_trader_id = Column(INTEGER(11), primary_key=True)
     simulation_id = Column(ForeignKey('simulation.simulation_id'), nullable=False)
     trader_id = Column(ForeignKey('traders.trader_id'), nullable=False, index=True)
-    ending_value = Column(Float)
+    ending_value = Column(Float(asdecimal=True))
 
     simulation = relationship('Simulation')
     trader = relationship('Trader')
@@ -124,8 +124,8 @@ class Transaction(Base):
     transaction_date = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
     transaction_price = Column(Float, nullable=False)
     transaction_type = Column(String(10), nullable=False)
-    transaction_quantity = Column(Float, nullable=False)
-    transaction_total = Column(Float, nullable=False)
+    transaction_quantity = Column(Float(asdecimal=True), nullable=False)
+    transaction_total = Column(Float(asdecimal=True), nullable=False)
     company_id = Column(ForeignKey('company.company_id'), nullable=False, index=True)
     transaction_tax = Column(Float, nullable=False, server_default=text("'0'"))
 

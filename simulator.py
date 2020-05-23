@@ -79,7 +79,7 @@ class Simulator:
             self.mem.set('progress_{}'.format(simulation_id), self.current_date)
             if callback:
                 callback(simulation_id, self.current_date)
-            if app_config.DEBUG:
+            if app_config.DEBUG >= 2:
                 print ('Process Day {}'.format(self.current_date))
             self.todays_prices = self.get_day_prices()
             if self.todays_prices:
@@ -87,10 +87,10 @@ class Simulator:
                 self.process_day(sim_traders)
             self.current_date = self.current_date + datetime.timedelta(days=1)
         for sim_trader, trader in sim_traders.items():
+            self.sell_all(trader, sim_trader.simulation_trader_id)
             trader.print_portfolio(self.last_prices)
             trader.print_profit(self.last_prices)
             sim_trader.ending_value = trader.portfolio.get_portfolio_value(self.last_prices)
-            self.sell_all(trader, sim_trader.simulation_trader_id)
         if callback:
             callback(simulation_id, 'Completed.')
         self.mem.set('progress_{}'.format(simulation_id), 'Completed.')
@@ -112,7 +112,7 @@ class Simulator:
         for sim_trader, trader in sim_traders.items():
             self.process_day_data(trader.get_portfolio(), sim_trader.simulation_trader_id)
             trader.process_day(self.current_date, self.datasets, sim_trader.simulation_trader_id)
-            if app_config.DEBUG:
+            if app_config.DEBUG >= 2:
                 trader.print_portfolio(self.todays_prices)
 
         #sleep(1)
@@ -124,18 +124,31 @@ class Simulator:
                 stock.current_price = current_price_history.trade_close
             dividend = self.dividend_history.get(stock.company_id, {}).get(self.current_date)
             if dividend:
-                if app_config.DEBUG:
-                    print("Paying Dividend of {} on {} for {}".format(dividend.dividend, self.current_date, stock.symbol))
-                taxes = round(stock.quantity * dividend.dividend * app_config.QUALIFIED_TAX_RATE, 2)
+                taxes = round(stock.quantity * dividend.dividend * app_config.DIVIDEND_TAX_RATE, 2)
                 payout = round(stock.quantity * dividend.dividend - taxes, 2)
                 add_transaction(self.session, sim_trader_id, self.current_date, stock.quantity, dividend.dividend, taxes, 'DIV', payout, stock.company_id)
                 portfolio.cash += payout
                 portfolio.taxes_paid += taxes
+                if app_config.DEBUG:
+                    print("Paying Dividend of {} on {} for {}  Balance: {:.2f}".format(dividend.dividend, self.current_date, stock.symbol, portfolio.cash))
             split = self.split_history.get(stock.company_id, {}).get(self.current_date)
             if split:
                 if not app_config.DEBUG:
                     print("Processing split of {} on {} for {}".format(split.ratio, self.current_date, stock.symbol))
                 stock.quantity *= split.ratio
+                if stock.quantity != round(stock.quantity):
+                    leftover = stock.quantity - stock.quantity//1
+                    stock.quantity = stock.quantity//1
+                    if leftover:
+                       
+                        taxes = round(stock.current_price * leftover * app_config.DIVIDEND_TAX_RATE, 2)
+                        payout = round(stock.current_price * leftover - taxes, 2)
+                        add_transaction(self.session, sim_trader_id, self.current_date, stock.quantity, leftover, taxes, 'DIV', payout, stock.company_id)
+                        portfolio.cash += payout
+                        portfolio.taxes_paid += taxes
+                        if app_config.DEBUG:
+                            print("Paying Split Dividend of {} on {} for {}  Balance: {:.2f}".format(leftover, self.current_date, stock.symbol, portfolio.cash))
+
                 add_transaction(self.session, sim_trader_id, self.current_date, split.ratio, 0, 0, 'SPLIT', 0, stock.company_id)
 
     def get_day_prices(self):
@@ -172,7 +185,7 @@ class Simulator:
         stock_holding.quantity += quantity
         stock_holding.cost_basis += transaction_cost
         trader.portfolio.cash -= transaction_cost
-        print('Purchased {} of {} on {} for {:.2f}'.format(quantity, symbol, self.current_date, transaction_cost))
+        print('Purchased {} of {} on {} for {:.2f}  Balance: {:.2f}'.format(quantity, symbol, self.current_date, transaction_cost, trader.portfolio.cash))
     
     def sell(self, trader, symbol, quantity, sim_trader_id):
         company_id = self.datasets[symbol].company.company_id
@@ -182,17 +195,18 @@ class Simulator:
         current_price = self.history.get_current_price(company_id).trade_close
         transaction_value = current_price * quantity - app_config.TRADE_FEES
         trader.portfolio.fees += app_config.TRADE_FEES
-        transaction = add_transaction(self.session, sim_trader_id, self.current_date, -quantity, current_price, 0, 'SELL', transaction_value, company_id)
+        tax = 0 #round(transaction_value * app_config.QUALIFIED_TAX_RATE, 2)
+        transaction = add_transaction(self.session, sim_trader_id, self.current_date, -quantity, current_price, tax, 'SELL', transaction_value, company_id)
         stock_holding.transactions.append(transaction)
         stock_holding.quantity -= quantity
         trader.portfolio.cash += transaction_value
         # TODO how to handle short term taxes
-        trader.portfolio.taxes_paid += transaction_value * app_config.QUALIFIED_TAX_RATE
-        trader.portfolio.cash -= transaction_value * app_config.QUALIFIED_TAX_RATE
+        trader.portfolio.taxes_paid += tax
+        trader.portfolio.cash -= tax
         if stock_holding.quantity == 0:
             trader.portfolio.previous_holdings.append(stock_holding)
             del trader.portfolio.stock_holdings[symbol]
-        print('Sold {} of {} on {} for {:.2f}'.format(quantity, symbol, self.current_date, transaction_value))
+        print('Sold {} of {} on {} for {:.2f}  Balance: {:.2f}'.format(quantity, symbol, self.current_date, transaction_value, trader.portfolio.cash))
 
     def sell_all(self, trader, sim_trader_id):
         print('sell all')

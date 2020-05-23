@@ -26,6 +26,7 @@ import { TransactionsComponent } from './simulations/simulation/transactions.com
 import { CapitalgainsComponent } from './simulations/simulation/capitalgains.component';
 
 import { SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
+import { SummaryComponent } from './simulations/simulation/summary.component';
 const config: SocketIoConfig = { url: 'http://localhost:4200', options: {} };
 
 @NgModule({
@@ -43,6 +44,7 @@ const config: SocketIoConfig = { url: 'http://localhost:4200', options: {} };
     SimulationComponent,
     TransactionsComponent,
     CapitalgainsComponent,
+    SummaryComponent,
   ],
   imports: [
     BrowserModule,

@@ -9,7 +9,7 @@ import { SimulationService } from 'src/app/services/simulations';
 })
 export class CapitalgainsComponent implements OnInit {
   @Input() simulationTrader: SimulationTrader;
-  @Input() capitalGains: CapitalGain[];
+  capitalGains: CapitalGain[];
 
   constructor(private simulationService: SimulationService) { }
 

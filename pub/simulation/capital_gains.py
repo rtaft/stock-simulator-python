@@ -1,3 +1,4 @@
+import decimal
 import flask
 from flask import request
 import flask_restful as restful
@@ -29,6 +30,7 @@ def get_capital_gains(transactions):
         if transaction.transaction_type == 'SPLIT':
             for purchase in purchases:
                 purchase.transaction_quantity = purchase.transaction_quantity * transaction.transaction_quantity
+                purchase.transaction_quantity = purchase.transaction_quantity//1
 
         if transaction.transaction_type == 'SELL':
             #FIFO
@@ -48,9 +50,9 @@ def get_capital_gains(transactions):
                 elif purchase.transaction_quantity > abs(transaction.transaction_quantity):
                     if 'initial_purchase_date' not in gain:
                         gain['initial_purchase_date'] = purchase.transaction_date
-                    ratio = abs(transaction.transaction_quantity / purchase.transaction_quantity) # .5
+                    ratio = decimal.Decimal(abs(transaction.transaction_quantity / purchase.transaction_quantity)) # .5
                     gain['cost_basis'] += purchase.transaction_total * ratio
-                    purchase.transaction_quantity -=  purchase.transaction_quantity * ratio
+                    purchase.transaction_quantity -= purchase.transaction_quantity * ratio
                     purchase.transaction_total -= purchase.transaction_total * ratio
                     break
                 else:
