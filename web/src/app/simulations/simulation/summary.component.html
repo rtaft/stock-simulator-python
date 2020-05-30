@@ -6,7 +6,7 @@
     <div>Invested: {{ simTrader.starting_balance | currency }}</div>
     <div>Ending Value: {{ simTrader.ending_value | currency }}</div>
     <div>Profit/Loss: {{ simTrader.ending_value - simTrader.starting_balance | currency }}</div>
-    <div>Capital Gains: {{ capitalGains[simTrader.simulation_trader_id] | currency }}</div> 
+    <div>Capital Gains: {{ capitalGainsProfit[simTrader.simulation_trader_id] | currency }}</div> 
     <div>Dividends: {{ dividends[simTrader.simulation_trader_id] | currency }}</div>
     <div>Dividend Tax: {{ dividend_taxes[simTrader.simulation_trader_id] | currency }}</div>
 </div>

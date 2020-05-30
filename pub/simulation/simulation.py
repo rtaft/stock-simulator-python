@@ -25,7 +25,7 @@ from database.simulation import add_simulation, add_simulation_trader, get_simul
 EXECUTOR = ThreadPoolExecutor(2)
 
 class SimulationRunSchema(Schema):
-    trader_id = fields.Integer(required=True)
+    trader_ids = fields.List(fields.Integer(required=True))
     start_date = fields.Date(required=True)
     end_date = fields.Date(required=True)
     starting_cash = fields.Int(required=True)
@@ -65,9 +65,11 @@ class SimulationHandler (restful.Resource):
             print(data)
 
             simulator = Simulator(session=session, stock_list_name=data['stock_list'])
-            # TODO multiple traders support
             # TODO trader config support
-            traders = simulator.initiate_traders({data['trader_id']: dict(starting_cash=data['starting_cash'])})
+            trader_config = dict()
+            for trader_id in data['trader_ids']:
+                trader_config[trader_id] = dict(starting_cash=data['starting_cash'])
+            traders = simulator.initiate_traders(trader_config)
 
             sim_traders = dict()
             session.commit()

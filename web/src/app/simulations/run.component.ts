@@ -17,7 +17,7 @@ import { StockService } from '../services/stock';
 })
 export class RunComponent implements OnInit {
   traders: Trader[] = []
-  selectedTrader: string = '0';
+  selectedTraders: string[] = [];
   tradeStartDate: Date = new Date(2010, 1, 1);
   tradeEndDate: Date = new Date(2011, 1, 1);
   startingCash: number = 10000;
@@ -47,9 +47,9 @@ export class RunComponent implements OnInit {
   }
 
   runSimulation() {
-    if (this.selectedTrader != null && this.tradeStartDate != null && this.tradeEndDate != null && this.tradeStartDate < this.tradeEndDate) {
+    if (this.selectedTraders != null && this.tradeStartDate != null && this.tradeEndDate != null && this.tradeStartDate < this.tradeEndDate) {
       this.running = true;
-      this.simulationService.runSimulation(this.selectedTrader, this.tradeStartDate, this.tradeEndDate, this.startingCash, this.description, this.selectedStockList).
+      this.simulationService.runSimulation(this.selectedTraders, this.tradeStartDate, this.tradeEndDate, this.startingCash, this.description, this.selectedStockList).
           toPromise().then( result => this.setSimulationId(result)).catch(result => this.running = false);
     }
   }

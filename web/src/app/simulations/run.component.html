@@ -9,9 +9,8 @@
 </div>
 
 <div >
-    <label for='selectedTrader'>Trader:</label>
-    <select id='selectedTrader'  [(ngModel)]="selectedTrader">
-        <option value='0'>-- SELECT --</option>
+    <label for='selectedTraders'>Trader:</label>
+    <select id='selectedTraders'  [(ngModel)]="selectedTraders" multiple>
         <option *ngFor="let trader of traders" value="{{ trader.trader_id }}">{{ trader.name }}</option>
     </select>
 </div>

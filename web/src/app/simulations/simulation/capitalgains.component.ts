@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, OnChanges } from '@angular/core';
 import { SimulationTrader, CapitalGain } from 'src/app/models/simulation';
 import { SimulationService } from 'src/app/services/simulations';
 
@@ -7,15 +7,11 @@ import { SimulationService } from 'src/app/services/simulations';
   templateUrl: './capitalgains.component.html',
   styleUrls: ['./capitalgains.component.scss']
 })
-export class CapitalgainsComponent implements OnInit {
+export class CapitalgainsComponent {
   @Input() simulationTrader: SimulationTrader;
-  capitalGains: CapitalGain[];
+  @Input() capitalGains: CapitalGain[];
 
   constructor(private simulationService: SimulationService) { }
-
-  ngOnInit() {
-    this.simulationService.getCapitalGains(this.simulationTrader.simulation_trader_id).toPromise().then(result => this.capitalGains = result);
-  }
 
   getCellClass() {
     return ' table-cells';
