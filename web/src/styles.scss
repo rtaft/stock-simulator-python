@@ -1,6 +1,7 @@
 @import '~@swimlane/ngx-datatable/index.css';
 @import '~@swimlane/ngx-datatable/themes/bootstrap.scss';
 @import '~@swimlane/ngx-datatable/assets/icons.css';
+
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
@@ -16,4 +17,8 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
 .ngx-datatable.bootstrap .datatable-header .datatable-header-cell {
     padding: 0px 0px 0px 12px;
+}
+
+.pointer {
+    cursor: pointer;
 }

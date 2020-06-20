@@ -89,22 +89,28 @@ def success(body=None):
     :param body: Response body
     :return: Flask Response Object
     """
+    return make_json_response(200, convert(body))
+
+def convert(body):
     if isinstance(body, (Base)):
         obj = dict(body.__dict__)
         del obj['_sa_instance_state']
-        return make_json_response(200, obj)
+        return obj
 
-    if isinstance(body, list):
-        if body:
-            if isinstance(body[0], (Base)):
-                data = []
-                for item in body:
-                    obj = dict(item.__dict__)
-                    del obj['_sa_instance_state']
-                    data.append(obj)
-                return make_json_response(200, data)
-
-    return make_json_response(200, body)
+    if isinstance(body, list) or isinstance(body, tuple):
+        if body and isinstance(body[0], (Base)):
+            data = []
+            for item in body:
+                obj = convert(item)
+                data.append(obj)
+            return data
+    
+    if isinstance(body, dict):
+        if body and isinstance(list(body.values())[0], (Base)):
+            for key, value in body.items():
+                body[key] = convert(value)
+            return body
+    return body
 
 def created(body=None):
     """

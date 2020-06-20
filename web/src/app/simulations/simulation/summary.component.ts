@@ -26,14 +26,14 @@ export class SummaryComponent implements OnInit, OnChanges {
         this.dividend_taxes[trader.simulation_trader_id] = 0
         
         this.capitalGainsProfit[trader.simulation_trader_id] = 0
-        if (this.capitalGains.get(trader.simulation_trader_id)) {
-          for (const gain of this.capitalGains.get(trader.simulation_trader_id)) {
+        if (this.capitalGains && this.capitalGains[trader.simulation_trader_id]) {
+          for (const gain of this.capitalGains[trader.simulation_trader_id]) {
             this.capitalGainsProfit[trader.simulation_trader_id] += gain['proceeds'] + gain['cost_basis']
           }
         }
 
-        if (this.transactions.get(trader.simulation_trader_id)) {
-          for (const transaction of this.transactions.get(trader.simulation_trader_id)) {
+        if (this.transactions && this.transactions[trader.simulation_trader_id]) {
+          for (const transaction of this.transactions[trader.simulation_trader_id]) {
             if (transaction.transaction_type == 'DIV') {
               this.dividends[transaction.simulation_trader_id] += transaction.transaction_total;
               this.dividend_taxes[transaction.simulation_trader_id] += transaction.transaction_tax;

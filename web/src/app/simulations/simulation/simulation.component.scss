@@ -7,19 +7,20 @@
   }
 
 .panel {
-  height: 100%;
   width: 100%;
 }
 
 .left-panel {
   display: inline-grid;
   width: 10%;
+  vertical-align: top;
 }
 
 .right-panel {
   display: inline-grid;
   margin-left: 15px;
   width: 85%;
+  vertical-align: top;
 }
 
 .menu {
@@ -29,10 +30,16 @@
   margin-block-end: 0em;
   margin-inline-start: 0px;
   margin-inline-end: 0px;
+  cursor: pointer;
 }
 
 .submenu {
   padding-left: 10px;
+  border-bottom: 0px solid #4caf50;
+  border-left: 3px solid transparent;
+  overflow: hidden;
+  transition: max-height 0.3s;
+  max-height: 0;
 }
 
 .menu-item {
@@ -44,6 +51,16 @@
   border-left: 3px solid #4caf50;
 }
 
+.submenu:hover {
+  border-left: 3px solid #4caf50;
+}
+
 .selected-menu-item {
   background-color: #4caf4f20;
+}
+
+.trader-item .submenu {
+  max-height: 10em;
+  transition: max-height 0.7s;
+  border-bottom: 1px solid #4caf50;
 }

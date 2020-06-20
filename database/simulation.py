@@ -22,6 +22,16 @@ def add_transaction(session, sim_trader_id, transaction_date, transaction_quanti
 def get_transactions(session, sim_trader_id):
     return session.query(Transaction, Company.symbol).filter(Company.company_id == Transaction.company_id).filter(Transaction.simulation_trader_id == sim_trader_id).all()
 
+def get_transactions_by_sim_trader(session, sim_trader_ids):
+    if not isinstance(sim_trader_ids, list):
+        sim_trader_ids = [sim_trader_ids]
+    results = session.query(Transaction, Company.symbol).filter(Company.company_id == Transaction.company_id).filter(Transaction.simulation_trader_id.in_(sim_trader_ids)).all()
+    transactions = dict()
+    for result in results:
+        grouped_transactions = transactions.setdefault(result[0].simulation_trader_id, [])
+        grouped_transactions.append(result)
+    return transactions
+
 def get_simulations(session, index=None, length=None):
     query = session.query(SimulationTrader, Simulation, Trader).join(Simulation).join(Trader)
     query = query.order_by(Simulation.simulation_id.desc())

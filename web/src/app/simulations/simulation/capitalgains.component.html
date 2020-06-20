@@ -1,4 +1,4 @@
-<h3>Capital Gains for {{ simulationTrader.name }}</h3>
+<h3 class="text-center">Capital Gains for {{ simulationTrader.name }}</h3>
 
 <ngx-datatable class="bootstrap dtable" 
                [columnMode]="'flex'"
@@ -6,14 +6,15 @@
                [loadingIndicator]="loadingIndicator"
                [headerHeight]="40"
                [footerHeight]="50"
-               [limit]="100"
+               [limit]="40"
+               [sorts]="[{prop: 'initial_purchase_date', dir: 'asc'}]"
                rowHeight="20px">
-    <ngx-datatable-column name="Purchase Date" [flexGrow]="2" [cellClass]="getCellClass">
+    <ngx-datatable-column name="Purchase Date" prop="initial_purchase_date" [flexGrow]="2" [cellClass]="getCellClass">
         <ng-template let-row="row" ngx-datatable-cell-template>
             {{ row['initial_purchase_date'] | date: 'yyyy-MM-dd' }}
         </ng-template>
     </ngx-datatable-column>
-    <ngx-datatable-column name="Sell Date" [flexGrow]="2" [cellClass]="getCellClass">
+    <ngx-datatable-column name="Sell Date" prop="sell_date" [flexGrow]="2" [cellClass]="getCellClass">
         <ng-template let-row="row" ngx-datatable-cell-template>
             {{ row['sell_date'] | date: 'yyyy-MM-dd' }}
         </ng-template>
@@ -23,12 +24,12 @@
             {{ row['symbol'] }}
         </ng-template>
     </ngx-datatable-column>
-    <ngx-datatable-column name="Qty" [flexGrow]="2" [cellClass]="getCellClass">
+    <ngx-datatable-column name="Qty" prop="quantity" [flexGrow]="2" [cellClass]="getCellClass">
         <ng-template let-row="row" ngx-datatable-cell-template>
             {{ row['quantity'] }}
         </ng-template>
     </ngx-datatable-column>
-    <ngx-datatable-column name="Cost Basis" [flexGrow]="2" [cellClass]="getCellClass">
+    <ngx-datatable-column name="Cost Basis" prop="cost_basis" [flexGrow]="2" [cellClass]="getCellClass">
         <ng-template let-row="row" ngx-datatable-cell-template>
             {{ row['cost_basis'] | currency }}
         </ng-template>
@@ -38,14 +39,14 @@
             {{ row['proceeds'] | currency }}
         </ng-template>
     </ngx-datatable-column>
-    <ngx-datatable-column name="Profit/Loss" [flexGrow]="2" [cellClass]="getCellClass">
+    <ngx-datatable-column name="Profit/Loss" prop="profit" [flexGrow]="2" [cellClass]="getCellClass">
         <ng-template let-row="row" ngx-datatable-cell-template>
-            {{ row['proceeds'] + row['cost_basis'] | currency }}
+            {{ row['profit'] | currency }}
         </ng-template>
     </ngx-datatable-column>
-    <ngx-datatable-column name="Profit/Loss %" [flexGrow]="2" [cellClass]="getCellClass">
+    <ngx-datatable-column name="Profit/Loss %" prop="profit_percent" [flexGrow]="2" [cellClass]="getCellClass">
         <ng-template let-row="row" ngx-datatable-cell-template>
-            {{ (row['proceeds'] + row['cost_basis'])/row['cost_basis']*-1 | percent }}
+            {{ row['profit_percent'] | percent }}
         </ng-template>
     </ngx-datatable-column>
 </ngx-datatable>

@@ -25,11 +25,11 @@ export class SimulationService {
         return this.httpClient.get<Simulation[]>('/api/simulation');
     }
 
-    getTransactions(sim_trader_id: number): Observable<Transaction[]> {
-        return this.httpClient.get<Transaction[]>('/api/transaction/' + sim_trader_id);
+    getTransactions(simulation_id: number): Observable<Record<number, Transaction[]>> {
+        return this.httpClient.get<Record<number, Transaction[]>>('/api/transaction/' + simulation_id);
     }
 
-    getCapitalGains(sim_trader_id: number): Observable<CapitalGain[]> {
-        return this.httpClient.get<CapitalGain[]>('/api/capital_gains/' + sim_trader_id);
+    getCapitalGains(simulation_id: number): Observable<Record<number, CapitalGain[]>> {
+        return this.httpClient.get<Record<number, CapitalGain[]>>('/api/capital_gains/' + simulation_id);
     }
 }
