@@ -1,4 +1,5 @@
 import { Component, OnInit, ɵɵcontainerRefreshEnd } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 //import {webSocket, WebSocketSubject} from 'rxjs/webSocket';
 import { Socket } from 'ngx-socket-io';
 import { Observable, Subscription } from "rxjs";
@@ -9,6 +10,7 @@ import { TraderService } from '../services/traders';
 import { SimulationService } from '../services/simulations';
 import { Simulation, SimulationStatus } from '../models/simulation';
 import { StockService } from '../services/stock';
+import { AddTraderComponent } from './add-trader.component';
 
 @Component({
   selector: 'app-run',
@@ -17,10 +19,9 @@ import { StockService } from '../services/stock';
 })
 export class RunComponent implements OnInit {
   traders: Trader[] = []
-  selectedTraders: string[] = [];
+  addedTraders: any[] = [];
   tradeStartDate: Date = new Date(2010, 1, 1);
   tradeEndDate: Date = new Date(2011, 1, 1);
-  startingCash: number = 10000;
   description: string;
   simulationId: number;
   running = false;
@@ -34,7 +35,8 @@ export class RunComponent implements OnInit {
               private simulationService: SimulationService, 
               private stockService: StockService,
               private socket: Socket,
-              private router: Router ) { 
+              private router: Router,
+              public dialog: MatDialog) { 
   }
 
   ngOnInit() {
@@ -47,9 +49,9 @@ export class RunComponent implements OnInit {
   }
 
   runSimulation() {
-    if (this.selectedTraders != null && this.tradeStartDate != null && this.tradeEndDate != null && this.tradeStartDate < this.tradeEndDate) {
+    if (this.addedTraders.length > 0 && this.tradeStartDate != null && this.tradeEndDate != null && this.tradeStartDate < this.tradeEndDate) {
       this.running = true;
-      this.simulationService.runSimulation(this.selectedTraders, this.tradeStartDate, this.tradeEndDate, this.startingCash, this.description, this.selectedStockList).
+      this.simulationService.runSimulation(this.addedTraders, this.tradeStartDate, this.tradeEndDate, this.description, this.selectedStockList).
           toPromise().then( result => this.setSimulationId(result)).catch(result => this.running = false);
     }
   }
@@ -70,5 +72,20 @@ export class RunComponent implements OnInit {
       this.subscription = null;
       this.router.navigate(['/simulations/' + this.simulationId]);
     } 
+  }
+
+  addTrader() {
+    const dialogRef = this.dialog.open(AddTraderComponent, {
+      "data": this.traders
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.addedTraders.push(result);
+      }
+    });
+  }
+
+  remove(trader) {
+    this.addedTraders = this.addedTraders.filter(addedTrader => trader != addedTrader);
   }
 }

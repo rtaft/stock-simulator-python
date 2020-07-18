@@ -21,17 +21,16 @@ from simulator import Simulator
 from traders.interface import TraderInterface
 from database.trader import get_traders
 from database.simulation import add_simulation, add_simulation_trader, get_simulations, get_simulation_traders, get_transactions
+from traders.util import initiate_traders
 
 EXECUTOR = ThreadPoolExecutor(2)
 
 class SimulationRunSchema(Schema):
-    trader_ids = fields.List(fields.Integer(required=True))
+    traders = fields.List(fields.Dict(required=True))
     start_date = fields.Date(required=True)
     end_date = fields.Date(required=True)
-    starting_cash = fields.Int(required=True)
-    description = fields.String(default="None Specified")
-    stock_list = fields.String(required=True)
-    # TODO params
+    description = fields.String(missing="None Specified")
+    stock_list = fields.String(required=True, metatdata="Dataset to run against.")
 
 @API.route('/simulation', methods=['GET', 'POST'])
 class SimulationHandler (restful.Resource):
@@ -41,11 +40,9 @@ class SimulationHandler (restful.Resource):
     def post(self):
         data = request.get_json(force=True)
         valid_data = SimulationRunSchema().load(data)
-        valid_data['params'] = {}
         valid_data['simulation'] = add_simulation(flask.g.db,
                                                   valid_data['start_date'], 
                                                   valid_data['end_date'],
-                                                  valid_data['starting_cash'],
                                                   datetime.datetime.now(),
                                                   valid_data['description'],
                                                   valid_data['stock_list'])
@@ -62,19 +59,14 @@ class SimulationHandler (restful.Resource):
             engine.connect()
             Session = sessionmaker(bind=engine)
             session = Session()
-            print(data)
-
             simulator = Simulator(session=session, stock_list_name=data['stock_list'])
-            # TODO trader config support
-            trader_config = dict()
-            for trader_id in data['trader_ids']:
-                trader_config[trader_id] = dict(starting_cash=data['starting_cash'])
-            traders = simulator.initiate_traders(trader_config)
+            traders = simulator.create_traders(data['traders'])
 
             sim_traders = dict()
             session.commit()
             for trader in traders:
-                sim_trader = add_simulation_trader(session, data['simulation'].simulation_id, trader.trader_id)
+                sim_trader = add_simulation_trader(session, data['simulation'].simulation_id, trader.trader_id,
+                                                   starting_balance=trader.get_portfolio().get_cash_balance())
                 session.commit()
                 sim_traders[sim_trader] = trader
             simulator.start(data['start_date'], data['end_date'], sim_traders, data['simulation'].simulation_id, self.callback)

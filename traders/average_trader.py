@@ -5,9 +5,6 @@ import app_config
 import tools
 
 class AverageTrader(TraderInterface):
-    def setup(self, params=None):
-        print('Setup called')
-
     def get_name(self):
         return 'Average Trader'
 

@@ -6,6 +6,8 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { MDBBootstrapModule } from 'angular-bootstrap-md';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
+import { MatDialogModule } from '@angular/material';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { MenuComponent } from './base/menu.component';
 import { DashboardComponent } from './base/dashboard.component';
@@ -27,6 +29,8 @@ import { CapitalgainsComponent } from './simulations/simulation/capitalgains.com
 
 import { SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
 import { SummaryComponent } from './simulations/simulation/summary.component';
+import { AddTraderComponent } from './simulations/add-trader.component';
+
 const config: SocketIoConfig = { url: 'http://localhost:4200', options: {} };
 
 @NgModule({
@@ -45,12 +49,15 @@ const config: SocketIoConfig = { url: 'http://localhost:4200', options: {} };
     TransactionsComponent,
     CapitalgainsComponent,
     SummaryComponent,
+    AddTraderComponent,
   ],
   imports: [
     BrowserModule,
+    BrowserAnimationsModule,
     AppRoutingModule,
     FormsModule,
     HttpClientModule,
+    MatDialogModule,
     MDBBootstrapModule.forRoot(),
     NgxDatatableModule,
     SocketIoModule.forRoot(config)
@@ -60,6 +67,7 @@ const config: SocketIoConfig = { url: 'http://localhost:4200', options: {} };
     StockService,
     TraderService
   ],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
+  entryComponents: [AddTraderComponent]
 })
 export class AppModule { }

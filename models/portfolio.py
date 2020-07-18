@@ -40,6 +40,9 @@ class Portfolio:
             total += current_prices[stock.company_id] * stock.quantity
         return total
     
+    def get_cash_balance(self):
+        return self.cash
+
     def get_portfolio_value(self, current_prices):
         return self.cash + self.get_stock_value(current_prices)
     

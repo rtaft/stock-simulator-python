@@ -1,12 +1,9 @@
-from traders.interface import TraderInterface
+from traders.interface import TraderInterface, TraderSchema
 
 import app_config
 import tools
 
 class AppleBuyer(TraderInterface):
-    def setup(self, params=None):
-        print('Setup called')
-
     def get_name(self):
         return 'Apple Trader'
 

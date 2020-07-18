@@ -1,0 +1,25 @@
+<h4 md-dialog-title class="text-center">Add Trader</h4>
+<div md-dialog-content>
+  <div class="text-center">
+    <label class="trader-label">Select Trader:</label>
+    <select id='selectedTrader' [(ngModel)]="selectedTrader" (change)="selectTrader()" class="trader-select">
+      <option *ngFor="let trader of traders" value="{{ trader.trader_id }}">{{ trader.name }}</option>
+    </select>
+  </div>
+  <div *ngIf="schema">
+    <div *ngFor="let item of schema">
+      <div class="row" *ngIf="item['title'] != 'trader_id' && item['title'] != 'trader_name'">
+        <label class="field-label">{{ item['fieldname'] }}:</label>
+        <div class="field-input">
+          <input class="w-100" [(ngModel)]="item['value']" *ngIf="item['type'] == 'number'" type='number'/>
+          <input class="w-100" [(ngModel)]="item['value']" *ngIf="item['type'] == 'string'" type='text'/>
+        </div>
+        <div class="field-description">{{ item['notes'] }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+<div md-dialog-actions class="text-right">
+  <button md-button class="btn btn-success mr-1 add-button" (click)="add()" [disabled]='!validate()'>Add</button>
+  <button md-button class="btn btn-outline-danger add-button" (click)="cancel()">Cancel</button>
+</div>

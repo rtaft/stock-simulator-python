@@ -21,8 +21,26 @@ class Company(Base):
     error = Column(CHAR(1))
 
 
+class DividendHistory(Base):
+    __tablename__ = 'dividend_history'
+
+    dividend_id = Column(INTEGER(11), primary_key=True)
+    company_id = Column(INTEGER(11), nullable=False, index=True)
+    ex_date = Column(Date)
+    dividend = Column(Float, nullable=False)
+
+
 t_price_history = Table(
     'price_history', metadata,
+    Column('company_id', INTEGER(11), nullable=False),
+    Column('trade_date', Date, nullable=False, index=True),
+    Column('trade_close', Float, nullable=False),
+    Column('trade_volume', INTEGER(11), nullable=False)
+)
+
+
+t_price_history.bak = Table(
+    'price_history.bak', metadata,
     Column('company_id', INTEGER(11), nullable=False),
     Column('trade_date', Date, nullable=False, index=True),
     Column('trade_close', Float, nullable=False),
@@ -37,13 +55,21 @@ class Simulation(Base):
     simulation_date = Column(TIMESTAMP, nullable=False, server_default=text("CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"))
     start_date = Column(Date, nullable=False)
     end_date = Column(Date, nullable=False)
-    starting_balance = Column(Float, nullable=False)
     description = Column(String(2000))
     stock_list = Column(String(50))
 
 
 class SplitHistoryBak(Base):
     __tablename__ = 'split_history.bak'
+
+    split_id = Column(INTEGER(11), primary_key=True)
+    company_id = Column(INTEGER(11), nullable=False, index=True)
+    split_date = Column(Date)
+    ratio = Column(Float, nullable=False)
+
+
+class SplitHistoryBak2(Base):
+    __tablename__ = 'split_history.bak2'
 
     split_id = Column(INTEGER(11), primary_key=True)
     company_id = Column(INTEGER(11), nullable=False, index=True)
@@ -66,8 +92,8 @@ class Trader(Base):
     location = Column(String(2000), nullable=False)
 
 
-class DividendHistory(Base):
-    __tablename__ = 'dividend_history'
+class DividendHistoryBak(Base):
+    __tablename__ = 'dividend_history.bak'
 
     dividend_id = Column(INTEGER(11), primary_key=True)
     company_id = Column(ForeignKey('company.company_id'), nullable=False, index=True)
@@ -87,6 +113,7 @@ class SimulationTrader(Base):
     simulation_id = Column(ForeignKey('simulation.simulation_id'), nullable=False)
     trader_id = Column(ForeignKey('traders.trader_id'), nullable=False, index=True)
     ending_value = Column(Float(asdecimal=True))
+    starting_balance = Column(Float(asdecimal=True))
 
     simulation = relationship('Simulation')
     trader = relationship('Trader')

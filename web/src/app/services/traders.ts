@@ -27,4 +27,8 @@ export class TraderService {
     deleteTrader(trader_id: number) {
         return this.httpClient.delete('/api/trader/' + trader_id);
     }
+
+    getSchema(trader_id: number) {
+        return this.httpClient.get<Trader[]>('/api/trader/' + trader_id + '/schema');
+    }
 }

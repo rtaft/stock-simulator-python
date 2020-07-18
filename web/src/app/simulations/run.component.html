@@ -1,41 +1,38 @@
-<h1>Run Simulation</h1>
+<h1 class="text-center">Run Simulation</h1>
+<div class="ml-5">
+    <h4>Select Information</h4>
+    <div >
+        <label for='selectedStockList'>Stock List:</label>
+        <select id='selectedStockList'  [(ngModel)]="selectedStockList">
+            <option *ngFor="let stockList of stockLists" value="{{ stockList }}">{{ stockList }}</option>
+        </select>
+    </div>
 
-<h4>Select Information</h4>
-<div >
-    <label for='selectedStockList'>Stock List:</label>
-    <select id='selectedStockList'  [(ngModel)]="selectedStockList">
-        <option *ngFor="let stockList of stockLists" value="{{ stockList }}">{{ stockList }}</option>
-    </select>
+    <h4 class='mt-5'>Traders</h4>
+
+    <div *ngFor="let trader of addedTraders">
+        {{ trader['trader_name']['value'] }} <span *ngIf="trader['description'] && trader['description']['value']">( {{ trader['description']['value'] }} )</span>
+        <i class="fas fa-minus-circle remove" (click)="remove(trader)"></i>
+    </div>
+    <div *ngIf="addedTraders.length == 0">NONE</div>
+    <button (click)='addTrader()' class="btn btn-outline-success mt-1">Add Trader</button>
+
+    <h4 class='mt-5'>Simulation Date Range</h4>
+    <div>
+        <label for="startDate">Start Date:</label>
+        <input type="date" id="startDate" [(ngModel)]="tradeStartDate" required />
+        <label class="pad10"> to </label>
+        <label for="endDate">End Date:</label>
+        <input type="date" id="endDate" [(ngModel)]="tradeEndDate" />
+    </div>
+
+    <h4 class='mt-5'>Details</h4>
+    <div>
+        <label>Description:</label>
+        <input type="text" [(ngModel)]="description"/>
+    </div>
+
+    <button (click)="runSimulation()" [disabled]="running" class="mt-2 btn btn-success">Run Simulation</button>
+    <br>
+    <label>Status:</label> {{status}}
 </div>
-
-<div >
-    <label for='selectedTraders'>Trader:</label>
-    <select id='selectedTraders'  [(ngModel)]="selectedTraders" multiple>
-        <option *ngFor="let trader of traders" value="{{ trader.trader_id }}">{{ trader.name }}</option>
-    </select>
-</div>
-
-
-<h4>Simulation Date Range</h4>
-<div>
-    <label for="startDate">Start Date:</label>
-    <input type="date" id="startDate" [(ngModel)]="tradeStartDate" required />
-    <label class="pad10"> to </label>
-    <label for="endDate">End Date:</label>
-    <input type="date" id="endDate" [(ngModel)]="tradeEndDate" />
-</div>
-
-<h4>Details</h4>
-<div>
-    <label>Starting Cash:</label>
-    <input type="number" min="10" [(ngModel)]="startingCash"/>
-</div>
-
-<div>
-    <label>Description:</label>
-    <input type="text" [(ngModel)]="description"/>
-</div>
-
-<button (click)="runSimulation()" [disabled]="running">Run Simulation</button>
-<br>
-<label>Status:</label> {{status}}

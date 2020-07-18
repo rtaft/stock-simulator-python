@@ -102,7 +102,6 @@ CREATE TABLE IF NOT EXISTS simulation (
     simulation_date TIMESTAMP NOT NULL,
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
-    starting_balance DOUBLE NOT NULL,
     description VARCHAR(2000),
     stock_list VARCHAR(50) NOT NULL,
     PRIMARY KEY (simulation_id)
@@ -112,6 +111,7 @@ CREATE TABLE IF NOT EXISTS simulation_trader (
     simulation_trader_id INT AUTO_INCREMENT,
     simulation_id INT NOT NULL,
     trader_id INT NOT NULL,
+    starting_balance DOUBLE NOT NULL,
     ending_value DOUBLE,
     PRIMARY KEY (simulation_trader_id),
     FOREIGN KEY (simulation_id) REFERENCES simulation(simulation_id),

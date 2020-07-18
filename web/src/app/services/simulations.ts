@@ -8,9 +8,9 @@ import { Simulation, SimulationStatus, SimulationTrader, Transaction, CapitalGai
 export class SimulationService {
     constructor(private httpClient: HttpClient) {}
 
-    runSimulation(trader_ids: string[], start_date: Date, end_date: Date, starting_cash: number, description: string, stockList: string): Observable<number> {
-        return this.httpClient.post<number>('/api/simulation', {trader_ids: trader_ids, start_date: start_date, end_date: end_date, 
-                                                                starting_cash: starting_cash, description: description, stock_list: stockList});
+    runSimulation(traders: {}, start_date: Date, end_date: Date, description: string, stockList: string): Observable<number> {
+        return this.httpClient.post<number>('/api/simulation', {traders: traders, start_date: start_date, end_date: end_date, 
+                                                                description: description, stock_list: stockList});
     } 
 
     getSimulationStatus(simulation_id: number): Observable<SimulationStatus> {

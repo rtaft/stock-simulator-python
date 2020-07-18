@@ -11,7 +11,9 @@ import price_history_manager
 import tools
 import math 
 import pprint
-
+import json
+from traders.simple_trader import SimpleTraderSchema
+from marshmallow_jsonschema import JSONSchema
 
 def main():
     engine = create_engine('{}://{}:{}@{}/{}'.format(app_config.DB_TYPE, app_config.DB_USER, app_config.DB_PASS, app_config.DB_HOST, app_config.DB_NAME))
@@ -33,4 +35,11 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    #main()
+    import pprint
+    #print(json.dumps(SingleBuyerSchema))
+    #pprint.pprint(SingleBuyerSchema().__dict__)
+    #print(SingleBuyerSchema.__dict__['_declared_fields']['symbol'])
+    schema = SimpleTraderSchema()
+    pprint.pprint(list(JSONSchema().dump(schema)['definitions'].values())[0]['required'])
+    #pprint.pprint(list(JSONSchema().dump(schema)['definitions'].values())[0]['properties'])
