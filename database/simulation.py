@@ -2,12 +2,15 @@ from sqlalchemy import between, and_, distinct
 from database.database import Company, Simulation, Transaction, SimulationTrader, Trader
 
 def add_simulation(session, start_date, end_date, simulation_date, description, stock_list):
-    sim = Simulation(start_date=start_date, end_date=end_date, simulation_date=simulation_date, description=description, stock_list=stock_list)
+    sim = Simulation(start_date=start_date, end_date=end_date, simulation_date=simulation_date, 
+                     description=description, stock_list=stock_list)
     session.add(sim)
     return sim
 
-def add_simulation_trader(session, simulation_id, trader_id, starting_balance):
-    sim_trader = SimulationTrader(simulation_id=simulation_id, trader_id=trader_id, starting_balance=starting_balance)
+def add_simulation_trader(session, simulation_id, trader_id, starting_balance, description, params):
+    sim_trader = SimulationTrader(simulation_id=simulation_id, trader_id=trader_id, starting_balance=starting_balance, 
+                                  description=description, params=params)
+    print(sim_trader)
     session.add(sim_trader)
     return sim_trader
 

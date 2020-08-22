@@ -21,6 +21,7 @@ class TraderInterface:
         valid_data = TraderSchema(unknown=EXCLUDE).load(params)
         self.portfolio.add_cash(valid_data['starting_balance'])
         self.description = valid_data.get('description', '')
+        self.params = params
 
     def get_name(self):
         raise NotImplementedError()

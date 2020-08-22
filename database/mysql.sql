@@ -113,6 +113,8 @@ CREATE TABLE IF NOT EXISTS simulation_trader (
     trader_id INT NOT NULL,
     starting_balance DOUBLE NOT NULL,
     ending_value DOUBLE,
+    trader_description VARCHAR(2000),
+    params TEXT,
     PRIMARY KEY (simulation_trader_id),
     FOREIGN KEY (simulation_id) REFERENCES simulation(simulation_id),
     FOREIGN KEY (trader_id) REFERENCES traders(trader_id),

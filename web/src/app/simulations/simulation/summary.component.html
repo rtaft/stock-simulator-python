@@ -2,6 +2,7 @@
 
 <div *ngFor="let simTrader of simulationTraders" class="section">
     <div>Name: {{ simTrader.name }}</div>
+    <div>Description: {{ simTrader.trader_description }} </div>
     <div>Range: {{ simTrader.start_date }} - {{ simTrader.end_date}}</div>
     <div>Invested: {{ simTrader.starting_balance | currency }}</div>
     <div>Ending Value: {{ simTrader.ending_value | currency }}</div>

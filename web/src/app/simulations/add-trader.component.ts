@@ -55,6 +55,7 @@ export class AddTraderComponent implements OnInit {
             result[key]['fieldname'] = this.titleCase(key);
           }
         }
+        result['description']['value'] = traderName;
       }
     });
   }

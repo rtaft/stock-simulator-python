@@ -1,5 +1,5 @@
 # coding: utf-8
-from sqlalchemy import CHAR, Column, Date, Float, ForeignKey, Index, String, TIMESTAMP, Table, text
+from sqlalchemy import CHAR, Column, Date, Float, ForeignKey, String, TIMESTAMP, Table, Text, text
 from sqlalchemy.dialects.mysql import INTEGER
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
@@ -105,15 +105,14 @@ class DividendHistoryBak(Base):
 
 class SimulationTrader(Base):
     __tablename__ = 'simulation_trader'
-    __table_args__ = (
-        Index('simulation_id', 'simulation_id', 'trader_id', unique=True),
-    )
 
     simulation_trader_id = Column(INTEGER(11), primary_key=True)
-    simulation_id = Column(ForeignKey('simulation.simulation_id'), nullable=False)
+    simulation_id = Column(ForeignKey('simulation.simulation_id'), nullable=False, index=True)
     trader_id = Column(ForeignKey('traders.trader_id'), nullable=False, index=True)
     ending_value = Column(Float(asdecimal=True))
     starting_balance = Column(Float(asdecimal=True))
+    trader_description = Column(String(2000))
+    params = Column(Text)
 
     simulation = relationship('Simulation')
     trader = relationship('Trader')

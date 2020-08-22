@@ -231,6 +231,7 @@ class Simulator:
             for key, value in trader_data[i].items():
                 data[key] = value.get('value')
             trader.setup(data)
+            
         return trader_instances
 
 def main():

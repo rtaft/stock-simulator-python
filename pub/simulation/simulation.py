@@ -1,3 +1,4 @@
+import json
 import os
 import sys, inspect, importlib
 import datetime
@@ -66,7 +67,8 @@ class SimulationHandler (restful.Resource):
             session.commit()
             for trader in traders:
                 sim_trader = add_simulation_trader(session, data['simulation'].simulation_id, trader.trader_id,
-                                                   starting_balance=trader.get_portfolio().get_cash_balance())
+                                                   starting_balance=trader.get_portfolio().get_cash_balance(),
+                                                   description=trader.description, params=json.dumps(trader.params))
                 session.commit()
                 sim_traders[sim_trader] = trader
             simulator.start(data['start_date'], data['end_date'], sim_traders, data['simulation'].simulation_id, self.callback)

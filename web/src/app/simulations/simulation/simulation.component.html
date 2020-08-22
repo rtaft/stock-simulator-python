@@ -5,7 +5,7 @@
             <li [ngClass]="getClass(-1)" (click)="select(-1)">Summary</li>
             <ng-container *ngFor="let trader of simulationTraders" >
                 <li [ngClass]="getParentClass(trader.simulation_trader_id)">
-                    <div (click)="select(trader.simulation_trader_id)" [ngClass]="getClass(trader.simulation_trader_id)">{{ trader.name }}</div>
+                    <div (click)="select(trader.simulation_trader_id)" [ngClass]="getClass(trader.simulation_trader_id)">{{ trader.trader_description || trader.name }}</div>
                     <div (click)="show('capital_gains')" [ngClass]="getScreenClass('capital_gains')">Capital Gains</div>
                     <div (click)="show('transactions')" [ngClass]="getScreenClass('transactions')">Transactions</div>
                 </li>

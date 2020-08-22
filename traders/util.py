@@ -24,6 +24,17 @@ def initiate_traders(simulator, traders):
                                 trader_instances.append(trader)
     return trader_instances
 
+def is_trader_instance(path):
+    importlib.import_module(path)
+    trader_module = get_class(path)
+    for _, obj in inspect.getmembers(trader_module):
+        if inspect.isclass(obj):
+            if obj != TraderInterface:
+                for mro in inspect.getmro(obj):
+                    if mro == TraderInterface:
+                        return True
+    return False
+
 def get_class(kls):
     parts = kls.split('.')
     module = ".".join(parts[:-1])
