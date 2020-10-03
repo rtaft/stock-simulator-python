@@ -31,4 +31,8 @@ export class TraderService {
     getSchema(trader_id: number) {
         return this.httpClient.get<Trader[]>('/api/trader/' + trader_id + '/schema');
     }
+
+    addRepo(gitRepo: string) {
+        return this.httpClient.post('/api/trader/git', {git_repo: gitRepo});
+    }
 }

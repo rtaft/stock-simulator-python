@@ -90,6 +90,7 @@ class Trader(Base):
     trader_id = Column(INTEGER(11), primary_key=True)
     name = Column(String(255), nullable=False)
     location = Column(String(2000), nullable=False)
+    repo = Column(String(2000))
 
 
 class DividendHistoryBak(Base):

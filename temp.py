@@ -12,34 +12,44 @@ import tools
 import math 
 import pprint
 import json
+import os
+import random
+import shutil
 from traders.simple_trader import SimpleTraderSchema
 from marshmallow_jsonschema import JSONSchema
+from traders import util
 
 def main():
-    engine = create_engine('{}://{}:{}@{}/{}'.format(app_config.DB_TYPE, app_config.DB_USER, app_config.DB_PASS, app_config.DB_HOST, app_config.DB_NAME))
-    engine.connect()
-    Session = sessionmaker(bind=engine)
-    session = Session()
+    # engine = create_engine('{}://{}:{}@{}/{}'.format(app_config.DB_TYPE, app_config.DB_USER, app_config.DB_PASS, app_config.DB_HOST, app_config.DB_NAME))
+    # engine.connect()
+    # Session = sessionmaker(bind=engine)
+    # session = Session()
+    import git
+    temp = 'tmp'
+    pathname = '{}/repo{}'.format(temp, random.randint(100000, 1000000))
+    if not os.path.exists(temp):
+        os.mkdir(temp)
+    os.mkdir(pathname)
+    print("Download to {}".format(pathname))
+    git.Git(pathname).clone("git@github.com:rtaft/my-stock-traders.git")
+    #files = os.listdir(pathname)
+    trader_files = []
+    existing_files = []
 
-    transactions = get_transactions(session, 102)
-    cg = get_capital_gains(transactions)
-    pprint.pprint(cg)
+    #for pathname in files:
+    for root, dirs, files in os.walk(pathname, topdown=False):
+        for filename in files:
+            if filename[-3:] == '.py':
+                fullpath = os.path.join(root, filename)
+                print(fullpath)
+                print(util.is_trader_instance(fullpath[:-3].replace('/', '.')))
+                #trader_files.append(filename)
+    
 
-    # history = price_history_manager.PriceHistoryManager(session=session)
-    # history.set_current_date(datetime.date.today())
-    # company_id = 13
-    # #session.commit()
-    # data = tools.bollinger_bands(history, company_id, 30, 30)
-    # print(data)
+    shutil.rmtree(pathname)
 
 
 
 if __name__ == "__main__":
-    #main()
-    import pprint
-    #print(json.dumps(SingleBuyerSchema))
-    #pprint.pprint(SingleBuyerSchema().__dict__)
-    #print(SingleBuyerSchema.__dict__['_declared_fields']['symbol'])
-    schema = SimpleTraderSchema()
-    pprint.pprint(list(JSONSchema().dump(schema)['definitions'].values())[0]['required'])
-    #pprint.pprint(list(JSONSchema().dump(schema)['definitions'].values())[0]['properties'])
+    main()
+  

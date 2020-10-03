@@ -93,7 +93,7 @@ CREATE TABLE IF NOT EXISTS traders (
     trader_id INT AUTO_INCREMENT,
     name VARCHAR(255) NOT NULL,
     location VARCHAR(2000) NOT NULL,
-    
+    repo VARCHAR(2000) NULL,
     PRIMARY KEY (trader_id)
 );
 

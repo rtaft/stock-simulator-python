@@ -1,0 +1,76 @@
+interest on cash holdings.
+Stock stops trading - force sale
+stocks that split into multiple symbols
+Fixing bad data < $1 at start of some stocks, PJT, NRE are examples.   PVT all over the place. NFC, SBT
+
+
+Get data for BRK.B, BF.B, 
+Could not find price history for APC
+Could not find price history for BRK.B
+Could not find price history for BF.B
+
+
+4/11/2020
+ - flag all price history with large gaps!  don't forget to clean dividends and splits outside of range
+ - simple trader base it on cost basis not stock price
+ - Transaction page filters and colors
+ 
+4/26 Notes
+ - Better error handling - API not running, error in simulation
+
+5/2
+ - Fresh Data import (test)
+
+5/9
+ - YOY return total vs per stock
+ - Logins & users etc.
+ - LIFO
+
+5/23
+  - Capital Gains Page - show totals
+  - Capital Gains taxes broken
+
+5/30
+  - Sim page- how to tell which trader is which when running more than one simple trader
+  - Sim error should be reported to front end. (duplicate for emphasis)
+
+6/6
+  - Linting
+  - page icon?
+
+6/13
+ - View Simulations - padding, margin, alignment at various sizes.
+
+6/20
+ - Individual stock pages with total return, graphs. 
+ - Viewing simulations while one is running shows incomplete data, does not refresh.
+
+
+7/25
+  - Pass trading fees into trader / not app_config
+
+8/22
+ - Edit on traders
+ - Way to run simulation with previous params.
+
+9/26
+ - Send git temp location and traders to frontend to add to ui.
+ - Add ability to select multiple traders to add.
+
+10/3
+ - User management
+ - Add owner to trader in traders.
+ - Add shared/public/private flag to trader
+
+Summary -
+  Starting Investment
+  Ending Value
+  Date Ranges
+  Trader
+  - Description
+
+  Capital Gains Summary
+  Dividends
+  YOY return total
+
+python line wrapping at 100 chars.

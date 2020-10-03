@@ -4,10 +4,6 @@
 
 <h4>Add New Trader</h4>
 <div>
-    <label for="name">Name:</label>
-    <input type="text" id="name" [(ngModel)]='newTrader.name'/>
-</div>
-<div>
     <label for="traderLocation">Location:</label>
     <select id="traderLocation" [(ngModel)]="traderLocation">
         <option value='local'>Local Disk</option>
@@ -17,10 +13,15 @@
 </div>
 <div *ngIf="traderLocation == 'local'">
     <label for='fileLocation'>File:</label>
-    <select id='fileLocation'  [(ngModel)]="fileLocation">
+    <select id='fileLocation' [(ngModel)]="fileLocation">
         <option value='0'>-- SELECT --</option>
-        <option *ngFor="let trader of tradersOnDisk" value="{{ trader }}">{{ trader }}</option>
+        <option *ngFor="let trader of tradersOnDisk" value="{{ trader['filename'] }}">{{ trader['name'] }}
+            ({{trader['filename'] }})</option>
     </select>
+</div>
+<div *ngIf="traderLocation == 'repo'">
+    <label for="location">Git Repo:</label>
+    <input type="text" id="location" [(ngModel)]='gitRepo' />
 </div>
 <div>
     <button (click)="addTrader()">Add Trader</button>
