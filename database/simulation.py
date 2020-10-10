@@ -9,7 +9,7 @@ def add_simulation(session, start_date, end_date, simulation_date, description, 
 
 def add_simulation_trader(session, simulation_id, trader_id, starting_balance, description, params):
     sim_trader = SimulationTrader(simulation_id=simulation_id, trader_id=trader_id, starting_balance=starting_balance, 
-                                  description=description, params=params)
+                                  trader_description=description, params=params)
     print(sim_trader)
     session.add(sim_trader)
     return sim_trader

@@ -53,14 +53,12 @@ Could not find price history for BF.B
  - Edit on traders
  - Way to run simulation with previous params.
 
-9/26
- - Send git temp location and traders to frontend to add to ui.
- - Add ability to select multiple traders to add.
-
 10/3
+ - Run trader from git repo
  - User management
  - Add owner to trader in traders.
  - Add shared/public/private flag to trader
+
 
 Summary -
   Starting Investment

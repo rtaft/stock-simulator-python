@@ -41,7 +41,7 @@ class TraderHandler (restful.Resource):
                     existing_files.append(trader.location[7:])
             for filename in files:
                 if is_trader_instance('traders.' + filename[:-3]) and filename not in existing_files:
-                    trader = initiate_traders(None, ['file://' + filename])
+                    trader = initiate_traders(None, None, trader_locations=['file://' + filename])
                     trader_files.append(
                         dict(name=trader[0].get_name(), filename=filename))
 
@@ -98,6 +98,7 @@ class TraderSchemaHandler (restful.Resource):
     def get(self, trader_id):
         traders = get_traders(flask.g.db, trader_ids=[trader_id])
         instances = initiate_traders(None, traders)
+        print(instances)
         if instances[0] and instances[0].get_schema():
             trader_data = list(JSONSchema().dump(instances[0].get_schema())[
                                'definitions'].values())[0]['properties']

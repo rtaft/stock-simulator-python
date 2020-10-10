@@ -21,7 +21,6 @@ import app_config
 from simulator import Simulator
 from traders.interface import TraderInterface
 from database.simulation import add_simulation, add_simulation_trader, get_simulations, get_simulation_traders, get_transactions
-from traders.util import initiate_traders
 
 EXECUTOR = ThreadPoolExecutor(2)
 
